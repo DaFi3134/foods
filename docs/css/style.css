@@ -104,3 +104,117 @@ body { background: #f8fafc; color: #111; }
   position: absolute;
   top: -3px;
 }
+
+/* Главная картинка */
+.hero {
+  position: relative;
+  min-height: 420px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #101827;
+  margin-bottom: 30px;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-overlay {
+  position: relative;
+  z-index: 1;
+  min-height: 420px;
+  padding: 56px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(90deg, rgba(0,0,0,.62), rgba(0,0,0,.2));
+}
+
+.hero-overlay h1 {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.hero-overlay p {
+  font-size: 1.18rem;
+  max-width: 760px;
+}
+
+/* Счётчики */
+.stats-row .kpi-card {
+  min-height: 118px;
+}
+
+/* Профиль справа сверху */
+.profile-menu-link {
+  padding: .2rem .25rem;
+  border-radius: 999px;
+}
+
+.profile-menu-link:hover {
+  background: #f1faf8;
+}
+
+.profile-dropdown .dropdown-menu {
+  border: 0;
+  border-radius: 14px;
+  padding: .55rem;
+}
+
+.profile-dropdown .dropdown-item {
+  border-radius: 10px;
+  padding: .55rem .75rem;
+}
+
+/* Карусели на главной */
+.home-carousel {
+  min-height: 390px;
+}
+
+.home-carousel .carousel-inner {
+  padding: 8px 50px 28px;
+}
+
+.home-carousel-card {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.home-carousel-card img {
+  height: 230px;
+  object-fit: cover;
+}
+
+.carousel-section {
+  scroll-margin-top: 90px;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+  width: 8%;
+}
+
+@media (max-width: 767px) {
+  .hero {
+    min-height: 360px;
+  }
+
+  .hero-overlay {
+    min-height: 360px;
+    padding: 24px;
+  }
+
+  .home-carousel .carousel-inner {
+    padding-left: 34px;
+    padding-right: 34px;
+  }
+
+  .home-carousel-card img {
+    height: 185px;
+  }
+}

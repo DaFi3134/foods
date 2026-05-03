@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Предложить продукт — healthy food</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="site-header"></header>
+
+<main class="py-4">
+  <div class="container">
+    <section class="submit-hero product-submit-hero soft-shadow mb-4">
+      <div class="submit-hero-content">
+        <span class="submit-eyebrow"><i class="bi bi-basket2"></i> Заявка на модерацию</span>
+        <h1>Предложить продукт</h1>
+        <p>
+          Не нашёл продукт в базе? Отправь его данные — после проверки он появится
+          в таблице продуктов и сможет использоваться в рецептах и планировщике.
+        </p>
+      </div>
+      <div class="submit-hero-badge">
+        <i class="bi bi-clipboard2-check"></i>
+        <span>КБЖУ проверяются перед публикацией</span>
+      </div>
+    </section>
+
+    <div class="submit-layout">
+      <aside class="submit-sidebar">
+        <div class="submit-info-card soft-shadow">
+          <div class="submit-info-icon teal"><i class="bi bi-1-circle"></i></div>
+          <h5>Заполни продукт</h5>
+          <p>Укажи название, категорию и КБЖУ на 100 г продукта.</p>
+        </div>
+
+        <div class="submit-info-card soft-shadow">
+          <div class="submit-info-icon orange"><i class="bi bi-2-circle"></i></div>
+          <h5>Я проверю данные</h5>
+          <p>Сверю значения, уберу дубли и приведу продукт к единому формату.</p>
+        </div>
+
+        <div class="submit-info-card soft-shadow">
+          <div class="submit-info-icon blue"><i class="bi bi-3-circle"></i></div>
+          <h5>Продукт попадёт в базу</h5>
+          <p>После одобрения он появится на странице продуктов.</p>
+        </div>
+      </aside>
+
+      <section class="submit-form-card soft-shadow">
+        <div class="submit-form-head">
+          <div>
+            <h2>Данные продукта</h2>
+            <p>Лучше брать КБЖУ с упаковки или из надёжного источника. Значения указываются на 100 г.</p>
+          </div>
+          <div class="submit-form-icon"><i class="bi bi-plus-square"></i></div>
+        </div>
+
+        <!-- Замени XXXXXXXX на свой ID формы Formspree -->
+        <form class="pretty-submit-form" action="https://formspree.io/f/XXXXXXXX" method="POST">
+          <input type="hidden" name="_subject" value="Новая заявка продукта — healthy food">
+          <input type="hidden" name="Тип заявки" value="Продукт">
+          <input type="text" name="_gotcha" class="d-none" tabindex="-1" autocomplete="off">
+
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Название продукта *</label>
+              <input class="form-control form-control-lg" name="Название продукта" required placeholder="Например: Творог 5%">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Категория *</label>
+              <select class="form-select form-select-lg" name="Категория" required>
+                <option value="">Выбрать</option>
+                <option>Овощи</option>
+                <option>Фрукты</option>
+                <option>Крупы и злаки</option>
+                <option>Молочные продукты</option>
+                <option>Мясо и птица</option>
+                <option>Рыба и морепродукты</option>
+                <option>Яйца</option>
+                <option>Орехи и семена</option>
+                <option>Напитки</option>
+                <option>Готовые продукты</option>
+                <option>Другое</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <div class="nutrition-panel">
+                <div class="nutrition-panel-head">
+                  <div>
+                    <h5>КБЖУ на 100 г</h5>
+                    <p>Если точных данных нет, оставь поле пустым и добавь пояснение в комментарии.</p>
+                  </div>
+                  <span class="nutrition-badge">на 100 г</span>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-3 col-6">
+                    <label class="form-label">Ккал *</label>
+                    <input class="form-control" type="number" min="0" step="0.1" name="Ккал на 100 г" required placeholder="120">
+                  </div>
+
+                  <div class="col-md-3 col-6">
+                    <label class="form-label">Белки, г</label>
+                    <input class="form-control" type="number" min="0" step="0.1" name="Белки на 100 г" placeholder="10.5">
+                  </div>
+
+                  <div class="col-md-3 col-6">
+                    <label class="form-label">Жиры, г</label>
+                    <input class="form-control" type="number" min="0" step="0.1" name="Жиры на 100 г" placeholder="5">
+                  </div>
+
+                  <div class="col-md-3 col-6">
+                    <label class="form-label">Углеводы, г</label>
+                    <input class="form-control" type="number" min="0" step="0.1" name="Углеводы на 100 г" placeholder="3.2">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Бренд / производитель</label>
+              <input class="form-control" name="Бренд" placeholder="Если есть, например: Простоквашино">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Источник данных</label>
+              <input class="form-control" name="Источник данных" placeholder="Упаковка, сайт производителя, ссылка">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Описание или уточнение</label>
+              <textarea class="form-control" name="Описание" rows="4" placeholder="Например: продукт без сахара, готовый вес, сорт, жирность, особенности состава"></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Ссылка на фото упаковки</label>
+              <input class="form-control" type="url" name="Фото упаковки" placeholder="https://...">
+              <div class="form-hint">Фото необязательно, но оно поможет быстрее проверить данные.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Контакт для связи</label>
+              <input class="form-control" name="Контакт" placeholder="Telegram или email, необязательно">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Комментарий модератору</label>
+              <textarea class="form-control" name="Комментарий" rows="3" placeholder="Что важно учесть при проверке продукта"></textarea>
+            </div>
+          </div>
+
+          <div class="submit-bottom">
+            <div class="submit-note">
+              <i class="bi bi-info-circle"></i>
+              Продукт не добавится в базу автоматически — сначала он пройдёт модерацию.
+            </div>
+            <button class="btn btn-primary btn-lg submit-btn" type="submit">
+              <i class="bi bi-send"></i> Отправить на модерацию
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/layout.js"></script>
+</body>
+</html>

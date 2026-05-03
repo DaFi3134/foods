@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-overlay">
+    <h1>Быть здоровым — просто</h1>
+    <p>Прочитай основы правильной жизни, чтобы прогрессировать прямо сейчас</p>
+    <a href="{{ url_for('guide') }}" class="btn btn-primary btn-lg">
+      Читать статью
+    </a>
+  </div>
+</div>
+
+<!-- Feature cards -->
+<div class="row g-3 mb-5 align-items-stretch">
+  <div class="col-md-3 d-flex">
+    <div class="feature-card teal flex-fill">
+      <div class="icon"><i class="bi bi-calculator"></i></div>
+      <h5>Расчёт калорий и БЖУ</h5>
+      <p class="small">Подбери свой оптимальный уровень — BMR, TDEE, BMI</p>
+      <a href="{{ url_for('calculator') }}" class="stretched-link"></a>
+    </div>
+  </div>
+  <div class="col-md-3 d-flex">
+    <div class="feature-card orange flex-fill">
+      <div class="icon"><i class="bi bi-calendar3-range"></i></div>
+      <h5>Рацион питания</h5>
+      <p class="small">Сгенерируем примерный рацион по калориям и приёмам пищи</p>
+      <a href="{{ url_for('planner') }}" class="stretched-link"></a>
+    </div>
+  </div>
+  <div class="col-md-3 d-flex">
+    <div class="feature-card blue flex-fill">
+      <div class="icon"><i class="bi bi-basket3"></i></div>
+      <h5>Блюда и продукты</h5>
+      <p class="small">База блюд (фото + рецепты) и продукты с КБЖУ — из любого столбца можно добавить в расчёт.</p>
+      <a href="{{ url_for('library') }}" class="stretched-link"></a>
+    </div>
+  </div>
+  <div class="col-md-3 d-flex">
+    <div class="feature-card green flex-fill">
+      <div class="icon"><i class="bi bi-lightbulb-fill"></i></div>
+      <h5>Мифы и факты</h5>
+      <p class="small">Развенчаем распространённые заблуждения</p>
+      <a href="{{ url_for('myths') }}" class="stretched-link"></a>
+    </div>
+  </div>
+</div>
+
+<h3 class="mt-5">Мифы и факты</h3>
+
+<div id="mythsCarousel" class="carousel slide" data-bs-ride="carousel">
+  <div class="carousel-inner">
+
+    <div class="carousel-item active">
+      <div class="card myth-card">
+        <img src="/static/img/myth1.jpg" class="card-img-top">
+        <div class="card-body">
+          <h5>Углеводы — враг?</h5>
+          <a href="{{ url_for('myths') }}" class="btn btn-outline-primary">
+            Читать
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel-item">
+      <div class="card myth-card">
+        <img src="/static/img/myth2.jpg" class="card-img-top">
+        <div class="card-body">
+          <h5>После 18:00 нельзя есть?</h5>
+          <a href="{{ url_for('myths') }}" class="btn btn-outline-primary">
+            Читать
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="carousel-control-prev" type="button" data-bs-target="#mythsCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+
+  <button class="carousel-control-next" type="button" data-bs-target="#mythsCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>
+
+
+{% endblock %}

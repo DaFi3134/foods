@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4">
+  <h3>Профиль</h3>
+
+  <ul class="nav nav-tabs mt-3" id="profileTabs" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#data">Мои данные</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#prefs">Пожелания</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#allergies">Аллергии</button></li>
+  </ul>
+
+  <div class="tab-content p-3">
+    <!-- DATA -->
+    <div class="tab-pane fade show active" id="data">
+      <form method="post">
+        <input type="hidden" name="tab" value="data">
+        <div class="row g-3">
+          <!-- поля как раньше -->
+          <div class="col-md-2">
+            <label class="form-label">Пол</label>
+            <select name="sex" class="form-select">
+              <option value="male" {% if profile.data.sex=='male' %}selected{% endif %}>Мужской</option>
+              <option value="female" {% if profile.data.sex=='female' %}selected{% endif %}>Женский</option>
+            </select>
+          </div>
+          <div class="col-md-2"><label class="form-label">Возраст</label><input name="age" class="form-control" value="{{ profile.data.age or 25 }}"></div>
+          <div class="col-md-2"><label class="form-label">Вес (кг)</label><input name="weight" class="form-control" value="{{ profile.data.weight or 70 }}"></div>
+          <div class="col-md-2"><label class="form-label">Рост (см)</label><input name="height" class="form-control" value="{{ profile.data.height or 175 }}"></div>
+          <div class="col-md-3">
+            <label class="form-label">Активность</label>
+            <select name="activity" class="form-select">
+              <option value="sedentary" {% if profile.data.activity=='sedentary' %}selected{% endif %}>Малоподвижный</option>
+              <option value="light" {% if profile.data.activity=='light' %}selected{% endif %}>Лёгкая</option>
+              <option value="moderate" {% if profile.data.activity=='moderate' %}selected{% endif %}>Средняя</option>
+              <option value="active" {% if profile.data.activity=='active' %}selected{% endif %}>Активный</option>
+              <option value="very" {% if profile.data.activity=='very' %}selected{% endif %}>Очень активный</option>
+            </select>
+          </div>
+          <div class="col-12 mt-2">
+            <button class="btn btn-primary">Сохранить данные</button>
+            {% if profile.data.bmr %}
+              <span class="ms-3 small text-muted">BMR: {{ profile.data.bmr }} ккал, TDEE: {{ profile.data.tdee }} ккал</span>
+            {% endif %}
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- PREFS -->
+    <div class="tab-pane fade" id="prefs">
+      <form method="post" id="prefsForm">
+        <input type="hidden" name="tab" value="prefs">
+        <div class="mb-2">
+          <label class="form-label">Добавить пожелание (продукт/блюдо)</label>
+          <div class="d-flex gap-2">
+            <input id="prefInput" class="form-control" placeholder="Например: курица">
+            <button id="addPrefBtn" type="button" class="btn btn-outline-primary">Добавить</button>
+          </div>
+        </div>
+
+        <div id="prefsContainer" class="mb-3">
+          <!-- существующие чипы -->
+          {% for it in profile.prefs.liked %}
+            <span class="badge bg-success me-1 pref-chip">{{ it }} <button type="button" class="btn-close btn-close-white btn-sm ms-2 remove-chip" aria-label="Удалить"></button></span>
+          {% endfor %}
+        </div>
+
+        <input type="hidden" name="liked" id="likedHidden" value="{{ profile.prefs.liked | join(',') }}">
+        <div class="mb-3 mt-3">
+          <label class="form-label">Непонравившиеся / избегать</label>
+          <div class="d-flex gap-2">
+            <input id="dislikedInput" class="form-control" placeholder="Например: печенье">
+            <button id="addDislikeBtn" type="button" class="btn btn-outline-secondary">Добавить</button>
+          </div>
+        </div>
+
+        <div id="dislikedContainer" class="mb-3">
+          {% for it in profile.prefs.disliked %}
+            <span class="badge bg-secondary me-1 dislike-chip">{{ it }} <button type="button" class="btn-close btn-close-white btn-sm ms-2 remove-chip" aria-label="Удалить"></button></span>
+          {% endfor %}
+        </div>
+        <input type="hidden" name="disliked" id="dislikedHidden" value="{{ profile.prefs.disliked | join(',') }}">
+        <div>
+          <button class="btn btn-primary">Сохранить пожелания</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ALLERGIES -->
+    <div class="tab-pane fade" id="allergies">
+      <form method="post" id="allergyForm">
+        <input type="hidden" name="tab" value="allergies">
+        <div class="mb-2">
+          <label class="form-label">Добавить аллерген / противопоказание</label>
+          <div class="d-flex gap-2">
+            <input id="allergyInput" class="form-control" placeholder="Например: орехи">
+            <button id="addAllergyBtn" type="button" class="btn btn-outline-danger">Добавить</button>
+          </div>
+        </div>
+
+        <div id="allergyContainer" class="mb-3">
+          {% for it in profile.allergies %}
+            <span class="badge bg-danger me-1 allergy-chip">{{ it }} <button type="button" class="btn-close btn-close-white btn-sm ms-2 remove-chip" aria-label="Удалить"></button></span>
+          {% endfor %}
+        </div>
+
+        <input type="hidden" name="allergies" id="allergiesHidden" value="{{ profile.allergies | join(',') }}">
+
+        <div>
+          <button class="btn btn-danger">Сохранить аллергии</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Read/modify chips helper
+  function createChip(text, cls) {
+    const span = document.createElement('span');
+    span.className = cls + " badge me-1 d-inline-flex align-items-center";
+    span.innerHTML = `${text} <button type="button" class="btn-close btn-close-white btn-sm ms-2 remove-chip" aria-label="Удалить"></button>`;
+    span.dataset.value = text;
+    return span;
+  }
+
+  function setupAdd(inputId, btnId, containerId, hiddenId, chipClass) {
+    const input = document.getElementById(inputId);
+    const btn = document.getElementById(btnId);
+    const container = document.getElementById(containerId);
+    const hidden = document.getElementById(hiddenId);
+
+    function addVal(val) {
+      val = (val||'').trim();
+      if(!val) return;
+      // prevent duplicates
+      const exist = Array.from(container.querySelectorAll('span')).some(s => s.dataset.value === val);
+      if(exist) { input.value=''; return; }
+      const chip = createChip(val, chipClass);
+      container.appendChild(chip);
+      input.value='';
+      updateHidden();
+    }
+    btn.addEventListener('click', ()=> addVal(input.value));
+    input.addEventListener('keydown', (e)=> {
+      if(e.key === 'Enter') {
+        e.preventDefault();
+        addVal(input.value);
+      }
+    });
+
+    container.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('remove-chip') || e.target.closest('.remove-chip')) {
+        const chip = e.target.closest('span');
+        if(chip) { chip.remove(); updateHidden(); }
+      }
+    });
+
+    function updateHidden(){
+      const vals = Array.from(container.querySelectorAll('span')).map(s=>s.dataset.value);
+      hidden.value = vals.join(',');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setupAdd('prefInput','addPrefBtn','prefsContainer','likedHidden','pref-chip bg-success');
+    setupAdd('dislikedInput','addDislikeBtn','dislikedContainer','dislikedHidden','dislike-chip bg-secondary');
+    setupAdd('allergyInput','addAllergyBtn','allergyContainer','allergiesHidden','allergy-chip bg-danger');
+  });
+</script>
+
+
+
+{% endblock %}

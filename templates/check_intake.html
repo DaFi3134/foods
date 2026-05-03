@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4">
+  <h3>Проверка приёма пищи (КБЖУ за день)</h3>
+  <form method="post" id="intakeForm">
+    <div id="rows">
+      <!-- строки добавляются JS -->
+    </div>
+
+    <div class="mt-3">
+      <button type="button" id="addRow" class="btn btn-outline-primary btn-sm">Добавить запись</button>
+      <button class="btn btn-primary ms-2">Посчитать</button>
+    </div>
+  </form>
+
+  {% if result %}
+    <div class="mt-4">
+      <h5>Итого</h5>
+      <p>Ккал: {{ result.total.cal }} — Б {{ result.total.p }} г / Ж {{ result.total.f }} г / У {{ result.total.c }} г</p>
+      {% if result.tdee %}
+        <p>TDEE: {{ result.tdee }} ккал — {% if result.total.cal > result.tdee %}<span class="text-danger">перебор на {{ result.total.cal - result.tdee }} ккал</span>{% else %}<span class="text-success">недобор на {{ result.tdee - result.total.cal }} ккал</span>{% endif %}</p>
+      {% endif %}
+      {% for m in result.messages %}
+        <div class="small text-muted">{{ m }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<script>
+const products = {{ products | tojson | safe }};
+const dishes = {{ dishes | tojson | safe }};
+
+function buildRow(){
+  const idx = document.querySelectorAll('.intake-row').length;
+  const wrap = document.createElement('div'); wrap.className='intake-row row g-2 align-items-center mb-2';
+  wrap.innerHTML = `
+    <div class="col-md-2">
+      <select name="item_type[]" class="form-select">
+        <option value="product">Продукт</option>
+        <option value="dish">Блюдо</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <input list="all_items" name="item_name[]" class="form-control" placeholder="Название (выберите из подсказки)">
+      <datalist id="all_items"></datalist>
+    </div>
+    <div class="col-md-2"><input name="item_grams[]" class="form-control" placeholder="граммы" value="100"></div>
+    <div class="col-md-2"><button type="button" class="btn btn-outline-danger btn-sm remove-row">Удалить</button></div>
+  `;
+  document.getElementById('rows').appendChild(wrap);
+  refreshDatalist();
+}
+
+function refreshDatalist(){
+  const dl = document.getElementById('all_items'); dl.innerHTML='';
+  const names = new Set();
+  products.forEach(p=>names.add(p.name)); dishes.forEach(d=>names.add(d.name));
+  names.forEach(n=>{ const opt = document.createElement('option'); opt.value = n; dl.appendChild(opt); });
+}
+
+document.getElementById('addRow').addEventListener('click', ()=> buildRow());
+
+document.addEventListener('click',(e)=>{ if(e.target.classList.contains('remove-row')) e.target.closest('.intake-row').remove(); });
+
+// init 2 rows
+buildRow(); buildRow();
+</script>
+{% endblock %}

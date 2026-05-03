@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card p-4 mb-4 shadow-sm">
+  <h3>Расчёт калорий и БЖУ</h3>
+
+  <div class="mb-3">
+    {% if session.profile %}
+      <form method="post" class="d-inline-block me-2">
+        <input type="hidden" name="mode" value="use_profile">
+        <button class="btn btn-outline-success">Рассчитать для моих данных</button>
+      </form>
+    {% endif %}
+
+    <button class="btn btn-outline-primary" id="toggleManualBtn">Рассчитать для произвольных данных</button>
+  </div>
+
+  <div id="manualForm" style="display:none;">
+    <form method="post" class="row g-3 mt-2">
+      <input type="hidden" name="mode" value="manual">
+      <div class="col-md-2">
+        <label class="form-label">Пол</label>
+        <select name="sex" class="form-select">
+          <option value="male">Мужской</option>
+          <option value="female">Женский</option>
+        </select>
+      </div>
+      <div class="col-md-2"><label class="form-label">Возраст</label><input class="form-control" name="age" value="25"></div>
+      <div class="col-md-2"><label class="form-label">Вес (кг)</label><input class="form-control" name="weight" value="70"></div>
+      <div class="col-md-2"><label class="form-label">Рост (см)</label><input class="form-control" name="height" value="175"></div>
+      <div class="col-md-2">
+        <label class="form-label">Активность</label>
+        <select name="activity" class="form-select">
+          <option value="sedentary">Малоподвижный</option>
+          <option value="light">Лёгкая</option>
+          <option value="moderate">Средняя</option>
+          <option value="active">Активный</option>
+          <option value="very">Очень активный</option>
+        </select>
+      </div>
+      <div class="col-12"><button class="btn btn-primary">Рассчитать вручную</button></div>
+    </form>
+  </div>
+</div>
+
+{% if results %}
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card p-3 shadow-sm">
+      <h5>Результаты</h5>
+      <ul class="list-unstyled mb-0">
+        <li><strong>BMR</strong> — {{ results.bmr }} ккал/день</li>
+        <li><strong>TDEE</strong> — <span id="calcTdee">{{ results.tdee }}</span> ккал/день</li>
+        <li><strong>BMI</strong> — {{ results.bmi }}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3 shadow-sm">
+      <h5>Профиль</h5>
+      <pre class="small mb-0">{{ session.profile }}</pre>
+    </div>
+  </div>
+</div>
+{% else %}
+<!-- если нет результатов, прячем элемент с id calcTdee -->
+<div style="display:none"><span id="calcTdee"></span></div>
+{% endif %}
+
+<!-- ========== Inline Check Intake (Только inline, без отдельной страницы) ========== -->
+<div class="card p-4 shadow-sm mt-4" id="checkIntakeCard">
+  <h4>Проверка приёма пищи (КБЖУ за день)</h4>
+  <p class="small text-muted">Введите строки: выберите тип (Продукт/Блюдо), начните ввод — подсказка из базы, укажите граммы.</p>
+
+  <div class="mb-3">
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="tdee_source" id="useCalcTdee" value="calc" {% if results %}checked{% else %}disabled{% endif %}>
+      <label class="form-check-label" for="useCalcTdee">Использовать TDEE из расчёта</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="tdee_source" id="useCustomTdee" value="custom" {% if not results %}checked{% endif %}>
+      <label class="form-check-label" for="useCustomTdee">Ввести TDEE вручную</label>
+    </div>
+    <div class="d-inline-block ms-3" id="customTdeeWrap" style="display: {% if results %}none{% else %}inline-block{% endif %};">
+      <input id="customTdee" type="number" class="form-control form-control-sm" placeholder="TDEE, ккал" style="width:120px;">
+    </div>
+  </div>
+
+  <!-- datalists (заполняются из переменных products и dishes) -->
+  <datalist id="products_list">
+    {% for p in products %}
+      <option value="{{ p.name }}"></option>
+    {% endfor %}
+  </datalist>
+
+  <datalist id="dishes_list">
+    {% for d in dishes %}
+      <option value="{{ d.name }}"></option>
+    {% endfor %}
+  </datalist>
+
+  <form id="intakeForm" onsubmit="return false;">
+    <div id="intakeRows"></div>
+
+    <div class="mt-2 d-flex gap-2">
+      <button class="btn btn-outline-primary btn-sm" id="addIntakeRow">Добавить запись</button>
+      <button class="btn btn-primary btn-sm" id="calcIntakeBtn">Посчитать и сравнить</button>
+      <button class="btn btn-outline-secondary btn-sm" id="clearRows">Очистить</button>
+    </div>
+  </form>
+
+  <div id="intakeResult" class="mt-3" style="display:none;">
+    <h5>Результат</h5>
+    <div id="intakeSummary" class="small"></div>
+    <div id="intakeMessages" class="small text-muted mt-2"></div>
+  </div>
+</div>
+
+<script>
+/* Перед использованием убедись, что в render_template ты передаёшь products и dishes.
+   Пример: render_template('calc.html', ..., products=products, dishes=dishes)
+*/
+
+document.getElementById('toggleManualBtn').addEventListener('click', ()=>{
+  const f = document.getElementById('manualForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+});
+
+// TDEE source toggle
+document.querySelectorAll('input[name="tdee_source"]').forEach(r => {
+  r.addEventListener('change', ()=> {
+    const customWrap = document.getElementById('customTdeeWrap');
+    customWrap.style.display = (document.getElementById('useCustomTdee').checked) ? 'inline-block' : 'none';
+  });
+});
+
+// data arrays (from server)
+const products = {{ products | tojson | safe }};
+const dishes = {{ dishes | tojson | safe }};
+
+// helper to create a row
+let rowIndex = 0;
+function createRow() {
+  const idx = rowIndex++;
+  const div = document.createElement('div');
+  div.className = 'row g-2 align-items-center mb-2 intake-row';
+  div.dataset.idx = idx;
+
+  div.innerHTML = `
+    <div class="col-md-2">
+      <select class="form-select form-select-sm item-type">
+        <option value="product">Продукт</option>
+        <option value="dish">Блюдо</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <input class="form-control form-control-sm item-name" list="products_list" placeholder="Начните вводить название...">
+    </div>
+    <div class="col-md-2">
+      <input class="form-control form-control-sm item-grams" type="number" value="100" min="1">
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-danger btn-sm remove-row">Удалить</button>
+    </div>
+  `;
+
+  // when type changes - swap datalist
+  div.querySelector('.item-type').addEventListener('change', function(){
+    const nameInput = div.querySelector('.item-name');
+    if (this.value === 'product') {
+      nameInput.setAttribute('list', 'products_list');
+    } else {
+      nameInput.setAttribute('list', 'dishes_list');
+    }
+    // clear current value to avoid mismatch
+    nameInput.value = '';
+  });
+
+  // remove
+  div.querySelector('.remove-row').addEventListener('click', function(){
+    div.remove();
+  });
+
+  document.getElementById('intakeRows').appendChild(div);
+  return div;
+}
+
+// initial two rows
+createRow();
+createRow();
+
+document.getElementById('addIntakeRow').addEventListener('click', (e)=>{
+  e.preventDefault();
+  createRow();
+});
+
+document.getElementById('clearRows').addEventListener('click', (e)=>{
+  e.preventDefault();
+  document.getElementById('intakeRows').innerHTML = '';
+  rowIndex = 0;
+  createRow();
+});
+
+// main calculate button
+document.getElementById('calcIntakeBtn').addEventListener('click', async (e)=>{
+  e.preventDefault();
+  const rows = Array.from(document.querySelectorAll('.intake-row'));
+  const payloadRows = [];
+  for (const r of rows) {
+    const type = r.querySelector('.item-type').value;
+    const name = r.querySelector('.item-name').value && r.querySelector('.item-name').value.trim();
+    const grams = parseFloat(r.querySelector('.item-grams').value) || 0;
+    if (!name || grams <= 0) continue;
+    payloadRows.push({type, name, grams});
+  }
+  if (payloadRows.length === 0) {
+    alert('Добавьте хотя бы одну запись с названием и граммами.');
+    return;
+  }
+
+  // Determine TDEE to send:
+  let tdeeToUse = null;
+  if (document.getElementById('useCalcTdee') && document.getElementById('useCalcTdee').checked) {
+    // read TDEE from page (rendered by server if results exist)
+    const calcTdeeEl = document.getElementById('calcTdee');
+    const val = parseFloat(calcTdeeEl && calcTdeeEl.textContent) || null;
+    if (!val) {
+      // fallback: if server did not send results, require manual input
+      alert('Нет расчёта TDEE. Сначала рассчитайте BMR/TDEE или выберите \"Ввести TDEE вручную\"');
+      return;
+    }
+    tdeeToUse = val;
+  } else {
+    const custom = parseFloat(document.getElementById('customTdee').value);
+    if (!custom || custom <= 0) { alert('Укажите корректный TDEE вручную'); return; }
+    tdeeToUse = custom;
+  }
+
+  // send AJAX to /check-intake; server поддерживает AJAX и custom_tdee
+  try {
+    const res = await fetch('{{ url_for("check_intake") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({items: payloadRows, custom_tdee: tdeeToUse})
+    });
+    if (!res.ok) throw new Error('Сервер вернул ошибку ' + res.status);
+    const data = await res.json();
+    // show
+    document.getElementById('intakeResult').style.display = 'block';
+    const tot = data.total;
+    document.getElementById('intakeSummary').innerHTML = `
+      <strong>Итого:</strong> ${Math.round(tot.cal)} ккал — Б ${Math.round(tot.p)} г / Ж ${Math.round(tot.f)} г / У ${Math.round(tot.c)} г
+      <br><strong>TDEE (опорное):</strong> ${data.tdee || tdeeToUse} ккал
+      <br>${ (tot.cal > (data.tdee || tdeeToUse)) ? '<span class="text-danger">Перебор: ' + Math.round(tot.cal - (data.tdee || tdeeToUse)) + ' ккал</span>' : '<span class="text-success">Недобор: ' + Math.round((data.tdee || tdeeToUse) - tot.cal) + ' ккал</span>'}
+    `;
+    document.getElementById('intakeMessages').innerHTML = (data.messages && data.messages.length) ? data.messages.join('<br>') : '';
+  } catch (err) {
+    console.error(err);
+    alert('Ошибка при запросе: ' + err.message);
+  }
+});
+</script>
+
+{% endblock %}

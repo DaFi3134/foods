@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-3 mb-3 shadow-sm">
+  <h3>Продукты</h3>
+  <p class="small text-muted">Нажми на продукт, чтобы посмотреть детали</p>
+</div>
+
+<table class="table table-striped align-middle" id="productsTable">
+  <thead><tr><th></th><th>Название</th><th>Ккал/100г</th><th>Белки (г)</th><th>Жиры (г)</th><th>Угли (г)</th></tr></thead>
+  <tbody>
+    {% for p in products %}
+    <tr data-product='{{ p | tojson | safe }}' style="cursor:pointer;">
+      <td style="font-size:1.4rem">{{ p.emoji }}</td>
+      <td>{{ p.name }}</td>
+      <td>{{ p.calories }}</td>
+      <td>{{ p.protein }}</td>
+      <td>{{ p.fat }}</td>
+      <td>{{ p.carbs }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Product modal -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productModalTitle">Продукт</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        <p id="productModalEmoji" style="font-size:1.6rem"></p>
+        <p id="productModalInfo"></p>
+        <div id="productModalMacros" class="small text-muted"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const rows = document.querySelectorAll('#productsTable tbody tr');
+  const modal = new bootstrap.Modal(document.getElementById('productModal'));
+  rows.forEach(r => {
+    r.addEventListener('click', () => {
+      const p = JSON.parse(r.getAttribute('data-product'));
+      document.getElementById('productModalTitle').textContent = p.name;
+      document.getElementById('productModalEmoji').textContent = p.emoji || '';
+      document.getElementById('productModalInfo').innerHTML = `
+        <strong>Калорий/100г:</strong> ${p.calories}<br>
+        <strong>Порция (g):</strong> ${p.serving || 100}
+      `;
+      document.getElementById('productModalMacros').innerHTML = `
+        <strong>Белки:</strong> ${p.protein} г — <strong>Жиры:</strong> ${p.fat} г — <strong>Углеводы:</strong> ${p.carbs} г
+      `;
+      modal.show();
+    });
+  });
+});
+</script>
+{% endblock %}

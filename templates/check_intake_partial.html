@@ -1,0 +1,32 @@
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="mb-0">Проверка приёма пищи (КБЖУ за день)</h5>
+  </div>
+
+  <div class="card-body">
+    <form method="post" action="{{ url_for('check_intake') }}">
+      <div class="row">
+        <div class="col-md-3">
+          <label>Калории</label>
+          <input type="number" name="calories" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label>Белки</label>
+          <input type="number" name="protein" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label>Жиры</label>
+          <input type="number" name="fat" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label>Углеводы</label>
+          <input type="number" name="carbs" class="form-control">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-3">
+        Проверить
+      </button>
+    </form>
+  </div>
+</div>

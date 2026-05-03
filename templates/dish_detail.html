@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <div class="col-md-4">
+    {% if dish.photo %}<img src="{{ url_for('static_files', filename='uploads/'~dish.photo) }}" class="img-fluid rounded">{% endif %}
+  </div>
+  <div class="col-md-8">
+    <h3>{{ dish.name }}</h3>
+    <p class="small text-muted">Ккал: {{ dish.calories }} — Б {{ dish.protein }} / Ж {{ dish.fat }} / У {{ dish.carbs }}</p>
+    <h5>Ингредиенты</h5>
+    <ul>
+      {% for ing in dish.recipe.ingredients %}
+        <li>{{ ing.product }} — {{ ing.grams }} г</li>
+      {% endfor %}
+    </ul>
+    <h5>Инструкция</h5>
+    <p>{{ dish.recipe.instructions }}</p>
+  </div>
+</div>
+{% endblock %}

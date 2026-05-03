@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Библиотека — блюда и продукты</h3>
+
+  <div>
+    <a class="btn btn-outline-primary me-2" href="{{ url_for('dish_add') }}">Добавить блюдо</a>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productAddModal">Добавить продукт</button>
+  </div>
+</div>
+
+<!-- ====== FILTERS (server-side GET) ====== -->
+<form method="get" id="serverFilters" class="row g-2 mb-3 align-items-center">
+  <div class="col-auto">
+    <label class="form-label small mb-1">Показывать</label>
+    <select name="show" class="form-select form-select-sm">
+      <option value="both" {% if request.args.get('show','both')=='both' %}selected{% endif %}>Все</option>
+      <option value="dishes" {% if request.args.get('show')=='dishes' %}selected{% endif %}>Только блюда</option>
+      <option value="products" {% if request.args.get('show')=='products' %}selected{% endif %}>Только продукты</option>
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label class="form-label small mb-1">Тип приёма (блюда)</label>
+    <select name="meal_type" class="form-select form-select-sm">
+      <option value="" {% if not request.args.get('meal_type') %}selected{% endif %}>Все</option>
+      <option value="breakfast" {% if request.args.get('meal_type')=='breakfast' %}selected{% endif %}>Завтрак</option>
+      <option value="lunch" {% if request.args.get('meal_type')=='lunch' %}selected{% endif %}>Обед</option>
+      <option value="dinner" {% if request.args.get('meal_type')=='dinner' %}selected{% endif %}>Ужин</option>
+      <option value="snack" {% if request.args.get('meal_type')=='snack' %}selected{% endif %}>Перекус</option>
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label class="form-label small mb-1">Категория (продукты)</label>
+    <select name="product_category" class="form-select form-select-sm">
+      <option value="" {% if not request.args.get('product_category') %}selected{% endif %}>Все</option>
+      <option value="fruits" {% if request.args.get('product_category')=='fruits' %}selected{% endif %}>Фрукты</option>
+      <option value="vegetables" {% if request.args.get('product_category')=='vegetables' %}selected{% endif %}>Овощи</option>
+      <option value="meat" {% if request.args.get('product_category')=='meat' %}selected{% endif %}>Мясо</option>
+      <option value="dairy" {% if request.args.get('product_category')=='dairy' %}selected{% endif %}>Молочные</option>
+      <option value="grains" {% if request.args.get('product_category')=='grains' %}selected{% endif %}>Злаки</option>
+      <option value="other" {% if request.args.get('product_category')=='other' %}selected{% endif %}>Другое</option>
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label class="form-label small mb-1">Поиск (сервер)</label>
+    <input name="q" value="{{ request.args.get('q','') }}" class="form-control form-control-sm" placeholder="по названию">
+  </div>
+
+  <div class="col-auto align-self-end">
+    <button class="btn btn-sm btn-primary">Применить</button>
+    <a class="btn btn-sm btn-outline-secondary ms-1" href="{{ url_for('library') }}">Сброс</a>
+  </div>
+</form>
+
+<div class="row g-4">
+  <!-- ================= БЛЮДА ================= -->
+  <div class="col-md-6">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h4 class="mb-0">Блюда</h4>
+      <div class="small text-muted">Найдено: <span id="dishesCount">{{ dishes | length }}</span></div>
+    </div>
+
+    <!-- Быстрый client-side фильтр -->
+    <input type="text" class="form-control form-control-sm mb-2" placeholder="Быстрый поиск по блюдам..."
+           oninput="filterDishes(this.value)">
+
+    <div class="list-group" id="dishesList">
+      {% for d in dishes %}
+      <div class="list-group-item d-flex align-items-center dish-item" data-name="{{ d.name | lower }}">
+        <a href="{{ url_for('dish_detail', dish_id=d.id) }}" class="d-flex align-items-center flex-grow-1 text-decoration-none text-dark">
+          {% if d.photo %}
+            <img src="{{ url_for('static', filename='uploads/' ~ d.photo) }}"
+                 style="width:64px;height:64px;object-fit:cover;border-radius:8px;margin-right:10px" alt="{{ d.name }}">
+          {% else %}
+            <div style="width:64px;height:64px;background:#eee;border-radius:8px;margin-right:10px" aria-hidden="true"></div>
+          {% endif %}
+          <div>
+            <div class="fw-semibold dish-name">{{ d.name }}</div>
+            <div class="small text-muted">
+              {% if d.meal_types %}<span class="badge bg-light text-dark me-1 small">{{ d.meal_types }}</span>{% endif %}
+              Ккал: {{ d.calories }} — {{ d.protein }} / {{ d.fat }} / {{ d.carbs }}
+            </div>
+          </div>
+        </a>
+
+        <!-- УДАЛЕНИЕ (POST) -->
+        <form method="post" action="{{ url_for('dish_delete', dish_id=d.id) }}" onsubmit="return confirm({{ ('Удалить блюдо «%s»?' % d.name) | tojson }})">
+          {# Если у вас есть CSRF-токен: добавьте его здесь. Пример: {{ form.csrf_token }} или
+             {% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% endif %} #}
+          <button class="btn btn-sm btn-outline-danger ms-2" type="submit">✕</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="text-muted small p-3">Блюд не найдено</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ================= ПРОДУКТЫ ================= -->
+  <div class="col-md-6">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h4 class="mb-0">Продукты</h4>
+      <div class="small text-muted">Найдено: <span id="productsCount">{{ products | length }}</span></div>
+    </div>
+
+    <!-- Быстрый client-side фильтр -->
+    <input type="text" class="form-control form-control-sm mb-2" placeholder="Быстрый поиск по продуктам..."
+           oninput="filterProducts(this.value)">
+
+    <table class="table table-sm" id="productsTable">
+      <thead>
+        <tr>
+          <th></th><th>Название</th><th>Категория</th><th>Ккал</th><th>Б</th><th>Ж</th><th>У</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for p in products %}
+        <tr class="product-row" data-name="{{ p.name | lower }}" data-category="{{ (p.category or '') | lower }}">
+          <td style="font-size:1.2rem">{{ p.emoji or '⚪' }}</td>
+          <td class="product-name">{{ p.name }}</td>
+          <td class="text-muted small">{{ p.category or '-' }}</td>
+          <td>{{ p.calories }}</td>
+          <td>{{ p.protein }}</td>
+          <td>{{ p.fat }}</td>
+          <td>{{ p.carbs }}</td>
+          <td class="text-end">
+            <form method="post" action="{{ url_for('product_delete', product_id=p.id) }}" onsubmit="return confirm({{ ('Удалить продукт «%s»?' % p.name) | tojson }})">
+              {# CSRF-token placeholder #}
+              <button class="btn btn-sm btn-outline-danger" type="submit">✕</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+      <tr><td colspan="8" class="text-muted small">Продуктов не найдено</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ====== Modal: Add Product ====== -->
+<div class="modal fade" id="productAddModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('product_add') }}">
+        {# CSRF-token placeholder for add product form #}
+        <div class="modal-header">
+          <h5 class="modal-title" id="productAddModalLabel">Добавить продукт</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label small">Название</label>
+            <input name="name" class="form-control form-control-sm" required>
+          </div>
+          <div class="row g-2">
+            <div class="col-6"><label class="form-label small">Ккал/100г</label><input name="calories" class="form-control form-control-sm" type="number" step="0.1"></div>
+            <div class="col-6"><label class="form-label small">Белки (г)</label><input name="protein" class="form-control form-control-sm" type="number" step="0.1"></div>
+            <div class="col-6"><label class="form-label small">Жиры (г)</label><input name="fat" class="form-control form-control-sm" type="number" step="0.1"></div>
+            <div class="col-6"><label class="form-label small">Углеводы (г)</label><input name="carbs" class="form-control form-control-sm" type="number" step="0.1"></div>
+          </div>
+          <div class="mb-2 mt-2">
+            <label class="form-label small">Категория</label>
+            <select name="category" class="form-select form-select-sm">
+              <option value="fruits">Фрукты</option>
+              <option value="vegetables">Овощи</option>
+              <option value="meat">Мясо</option>
+              <option value="dairy">Молочные</option>
+              <option value="grains">Злаки</option>
+              <option value="other" selected>Другое</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Эмоджи (опционально)</label>
+            <input name="emoji" class="form-control form-control-sm" placeholder="🍎">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Отмена</button>
+          <button class="btn btn-primary" type="submit">Добавить продукт</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Client-side instant filters (works on currently rendered rows)
+function filterDishes(q) {
+  q = (q||'').toLowerCase();
+  const rows = document.querySelectorAll('.dish-item');
+  let visible = 0;
+  rows.forEach(r=>{
+    const name = (r.dataset.name || '').toLowerCase();
+    const ok = !q || name.includes(q);
+    r.style.display = ok ? '' : 'none';
+    if (ok) visible++;
+  });
+  document.getElementById('dishesCount').textContent = visible;
+}
+
+function filterProducts(q) {
+  q = (q||'').toLowerCase();
+  const rows = document.querySelectorAll('.product-row');
+  let visible = 0;
+  rows.forEach(r=>{
+    const name = (r.dataset.name || '').toLowerCase();
+    const cat = (r.dataset.category || '').toLowerCase();
+    const ok = !q || name.includes(q) || cat.includes(q);
+    r.style.display = ok ? '' : 'none';
+    if (ok) visible++;
+  });
+  document.getElementById('productsCount').textContent = visible;
+}
+
+// optional: pre-bind server-side select changes to instantly submit (if user wants)
+// use requestSubmit() when available, otherwise fallback to submit()
+document.querySelectorAll('#serverFilters select').forEach(el=>{
+  el.addEventListener('change', ()=>{
+    const form = document.getElementById('serverFilters');
+    if (form.requestSubmit) form.requestSubmit(); else form.submit();
+  });
+});
+</script>
+
+{% endblock %}

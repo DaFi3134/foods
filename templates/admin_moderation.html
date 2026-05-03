@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Модерация статей</title>
+  <link rel="stylesheet" href="{{ url_for('static_files', filename='style.css') }}">
+</head>
+<body>
+  <h1>Модерация статей</h1>
+  <p><a href="{{ url_for('admin_logout') }}">Выйти из режима админа</a></p>
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>ID</th>
+      <th>Название</th>
+      <th>Автор</th>
+      <th>Дата</th>
+      <th>Действия</th>
+    </tr>
+    {% for article in articles %}
+    <tr>
+      <td>{{ article.id }}</td>
+      <td>{{ article.title }}</td>
+      <td>{{ article.author_name }}</td>
+      <td>{{ article.created_at }}</td>
+      <td>
+        {% if not article.is_approved %}
+        <form method="post" action="{{ url_for('admin_approve', article_id=article.id) }}" style="display:inline;">
+          <button type="submit">Одобрить</button>
+        </form>
+        <form method="post" action="{{ url_for('admin_reject', article_id=article.id) }}" style="display:inline;">
+          <button type="submit">Отклонить</button>
+        </form>
+        {% else %}
+        ✅ Одобрено
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

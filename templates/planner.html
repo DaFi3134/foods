@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card p-4 mb-4 shadow-sm">
+  <h3>Рацион по калориям</h3>
+  <form method="post" class="row g-3 mt-2">
+    <div class="col-md-3"><label>Калорий в день</label><input name="calories" class="form-control" value="2000"></div>
+    <div class="col-md-3"><label>Кол-во приёмов пищи</label><input name="meals" class="form-control" value="4"></div>
+    <div class="col-md-12"><button class="btn btn-success">Сгенерировать</button></div>
+  </form>
+</div>
+
+{% if plan %}
+<h4>План — {{ plan.requested_calories }} ккал</h4>
+<div class="row">
+  {% for mname, meal in plan.meals.items() %}
+  <div class="col-md-6">
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h5>{{ mname }} — {{ meal["totals"]["cal"] }} ккал</h5>
+        <ul>
+          {% for it in meal["items"] %}
+          <li>{{ it.name }} — {{ it.grams }} г — {{ it.cal }} ккал (Б {{ it.p }} г / Ж {{ it.f }} г / У {{ it.c }} г)</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

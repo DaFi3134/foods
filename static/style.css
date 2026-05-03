@@ -1,0 +1,106 @@
+:root{
+  --teal: #17b7a3;
+  --orange: #ff8a3d;
+  --blue: #2f9df6;
+  --green: #26c281;
+  --muted: #6c757d;
+  font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+body { background: #f8fafc; color: #111; }
+
+/* logo circle */
+.logo-circle {
+  width:48px; height:48px; border-radius:50%;
+  background: linear-gradient(135deg,#17b7a3,#2fd6b3);
+  display:flex; align-items:center; justify-content:center; color:white; font-weight:700;
+}
+
+.hero {
+  height: 420px;
+  border-radius: 24px;
+  background: url("/static/img/hero.jpg") center/cover no-repeat;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 50px;
+  border-radius: 24px;
+}
+
+/* feature cards */
+.feature-card {
+  background: white;
+  padding: 26px;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  min-height: 140px;
+  box-shadow: 0 6px 18px rgba(17,24,39,0.06);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.feature-card .icon { font-size:28px; margin-bottom:8px; }
+.feature-card h5 { margin-bottom:6px; }
+.feature-card.teal { border-left:6px solid var(--teal); }
+.feature-card.orange { border-left:6px solid var(--orange); }
+.feature-card.blue { border-left:6px solid var(--blue); }
+.feature-card.green { border-left:6px solid var(--green); }
+.feature-card:hover { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(17,24,39,0.09); }
+.feature-card a.stretched-link { z-index: 2; }
+
+/* cards general */
+.card { border: none; border-radius: 12px; }
+
+/* small responsive tweaks */
+@media (max-width: 767px) {
+  .hero { min-height: 180px; }
+  .logo-circle { display:none; }
+}
+
+.avatar-circle {
+  width:40px; height:40px; border-radius:50%;
+  background: linear-gradient(135deg,#6dd3c9,#17b7a3);
+  color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600;
+}
+
+.badge { padding: .55rem .6rem; font-size: .875rem; }
+.pref-chip { background: #17b890; color: #fff; }
+.dislike-chip { background: #6c757d; color: #fff; }
+.allergy-chip { background: #dc3545; color: #fff; }
+.remove-chip { border: none; }
+
+.myth-card {
+  border-radius: 20px;
+  overflow: hidden;
+  max-width: 500px;
+  margin: auto;
+}
+
+.bmi-bar {
+  height: 14px;
+  border-radius: 10px;
+  background: linear-gradient(
+    to right,
+    #4da6ff,
+    #4caf50,
+    #ffc107,
+    #f44336
+  );
+  position: relative;
+}
+
+.bmi-marker {
+  width: 10px;
+  height: 20px;
+  background: black;
+  position: absolute;
+  top: -3px;
+}

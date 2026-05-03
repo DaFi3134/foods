@@ -449,3 +449,56 @@ a { text-decoration: none; }
     width: 100%;
   }
 }
+
+
+/* Submit product page */
+.product-submit-hero {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255,255,255,.22), transparent 28%),
+    linear-gradient(135deg, #17b7a3, #2f9df6);
+}
+
+.nutrition-panel {
+  background: linear-gradient(180deg, #f8fffd, #f4f8ff);
+  border: 1px solid #dce8e5;
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.nutrition-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.nutrition-panel-head h5 {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+
+.nutrition-panel-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.nutrition-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: .5rem .75rem;
+  background: #e6fbf7;
+  color: #08796d;
+  font-weight: 700;
+  font-size: .86rem;
+}
+
+@media (max-width: 767px) {
+  .nutrition-panel-head {
+    flex-direction: column;
+  }
+}

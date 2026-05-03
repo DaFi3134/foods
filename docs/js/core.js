@@ -6,8 +6,7 @@ const DATA_PATHS = {
 };
 
 // Замени на ссылку своего репозитория, например: https://github.com/Zver/Correctly-foods
-const GITHUB_REPO_URL = "https://github.com/USERNAME/REPOSITORY";
-
+const GITHUB_REPO_URL = "https://github.com/DaFi3134/foods";
 const mealLabels = {
   breakfast: "Завтрак",
   snack: "Перекус",

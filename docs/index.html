@@ -23,6 +23,29 @@
   </div>
 </section>
 
+<div class="row g-3 mb-5 align-items-stretch stats-row">
+  <div class="col-md-4 d-flex">
+    <div class="kpi-card flex-fill">
+      <div class="small-muted">Продуктов в базе</div>
+      <h2 id="productsCount">—</h2>
+    </div>
+  </div>
+
+  <div class="col-md-4 d-flex">
+    <div class="kpi-card flex-fill">
+      <div class="small-muted">Рецептов</div>
+      <h2 id="dishesCount">—</h2>
+    </div>
+  </div>
+
+  <div class="col-md-4 d-flex">
+    <div class="kpi-card flex-fill">
+      <div class="small-muted">Мифов и фактов</div>
+      <h2 id="mythsCount">—</h2>
+    </div>
+  </div>
+</div>
+  
 <div class="row g-3 mb-4">
   <div class="col-md-4"><div class="kpi-card"><div class="small-muted">Продуктов</div><h2 id="productsCount">—</h2></div></div>
   <div class="col-md-4"><div class="kpi-card"><div class="small-muted">Рецептов</div><h2 id="dishesCount">—</h2></div></div>
@@ -36,6 +59,48 @@
   <div class="col-md-3"><div class="feature-card green"><div class="icon">🧠</div><h5>Мифы</h5><p>Раздел статей после модерации.</p><a class="stretched-link" href="myths.html"></a></div></div>
 </div>
 
+<section class="carousel-section mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Рецепты</h3>
+    <a href="library.html">Все рецепты</a>
+  </div>
+
+  <div id="recipesCarousel" class="carousel carousel-dark slide home-carousel" data-bs-ride="carousel">
+    <div class="carousel-inner" id="recipesCarouselInner"></div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#recipesCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Назад</span>
+    </button>
+
+    <button class="carousel-control-next" type="button" data-bs-target="#recipesCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Вперёд</span>
+    </button>
+  </div>
+</section>
+
+<section class="carousel-section mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Мифы и факты</h3>
+    <a href="myths.html">Все мифы</a>
+  </div>
+
+  <div id="mythsCarousel" class="carousel carousel-dark slide home-carousel" data-bs-ride="carousel">
+    <div class="carousel-inner" id="mythsCarouselInner"></div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#mythsCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Назад</span>
+    </button>
+
+    <button class="carousel-control-next" type="button" data-bs-target="#mythsCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Вперёд</span>
+    </button>
+  </div>
+</section>  
+  
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="page-title mb-0">Последние рецепты</h2>
   <a href="library.html">Все рецепты</a>
@@ -43,6 +108,12 @@
 <div class="row g-4" id="latestRecipes"></div>
 </div></main>
 <footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/index.js"></script>
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/core.js"></script>
 <script src="js/layout.js"></script>

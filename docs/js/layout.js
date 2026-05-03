@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <footer class="bg-white border-top py-3 mt-5">
         <div class="container d-flex flex-wrap justify-content-between gap-2 small text-muted">
           <div>© healthy food — Питание для яркой жизни</div>
-          <div><a href="guide.html">Гид</a> · <a href="submit_recipe.html">Добавить рецепт</a> · <a href="submit_product.html">Добавить продукт</a> · <a href="submit_myth.html">Добавить миф</a></div>
+          <div><a href="guide.html">Гид</a> · <a href="submit_recipe.html">Добавить рецепт</a> · <a href="submit_product.html">Добавить продукт</a> · <a href="submit_myth.html">Добавить миф/статью</a></div>
         </div>
       </footer>`;
   }

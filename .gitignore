@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Flask / local data
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Local secrets
+.env
+.env.*
+
+# PyCharm
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads from users
+static/uploads/*
+!static/uploads/.gitkeep

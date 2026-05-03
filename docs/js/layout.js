@@ -14,9 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const profile = getProfile();
     const data = profile.data || {};
     const avatarText = data.weight ? `${escapeHtml(data.weight)}` : `<i class="bi bi-person-fill"></i>`;
-    const subtitle = data.weight
-      ? `${escapeHtml(data.weight)} кг · ${escapeHtml(data.height || "—")} см`
-      : "Персонализация";
+    const subtitle = data.weight ? `${escapeHtml(data.weight)} кг · ${escapeHtml(data.height || "—")} см` : "Персонализация";
 
     return `
       <div class="dropdown ms-lg-3 profile-dropdown">
@@ -27,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="small text-muted">${subtitle}</div>
           </div>
         </a>
-
         <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="profileMenu">
           <li><a class="dropdown-item" href="profile.html#data">Мои данные</a></li>
           <li><a class="dropdown-item" href="profile.html#prefs">Мои пожелания по еде</a></li>
@@ -40,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderHeader() {
     if (!header) return;
-
     const nav = [
       ["index.html", "Главная"],
       ["library.html", "Библиотека"],
@@ -61,27 +57,19 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="small text-muted">Твой гид к здоровью и энергии</div>
             </div>
           </a>
-
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Открыть меню">
             <span class="navbar-toggler-icon"></span>
           </button>
-
           <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-              ${nav.map(([href, text]) => `
-                <li class="nav-item">
-                  <a class="nav-link ${current === href ? "active" : ""}" href="${href}">${text}</a>
-                </li>
-              `).join("")}
+              ${nav.map(([href, text]) => `<li class="nav-item"><a class="nav-link ${current === href ? "active" : ""}" href="${href}">${text}</a></li>`).join("")}
             </ul>
-
             ${profileMenuHtml()}
           </div>
         </div>
       </nav>`;
 
     const clearBtn = document.getElementById("clearProfileFromMenu");
-
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
         if (confirm("Очистить сохранённый профиль?")) {
@@ -95,17 +83,12 @@ document.addEventListener("DOMContentLoaded", () => {
   renderHeader();
 
   const footer = document.getElementById("site-footer");
-
   if (footer) {
     footer.innerHTML = `
       <footer class="bg-white border-top py-3 mt-5">
         <div class="container d-flex flex-wrap justify-content-between gap-2 small text-muted">
           <div>© healthy food — Питание для яркой жизни</div>
-          <div>
-            <a href="guide.html">Гид</a> ·
-            <a href="submit_recipe.html">Добавить рецепт</a> ·
-            <a href="submit_myth.html">Добавить миф</a>
-          </div>
+          <div><a href="guide.html">Гид</a> · <a href="submit_recipe.html">Добавить рецепт</a> · <a href="submit_product.html">Добавить продукт</a> · <a href="submit_myth.html">Добавить миф</a></div>
         </div>
       </footer>`;
   }

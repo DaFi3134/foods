@@ -1,1 +1,166 @@
-
+[
+  {
+    "id": "oatmeal-banana-yogurt",
+    "name": "Овсянка с бананом и йогуртом",
+    "meal_types": [
+      "breakfast",
+      "snack"
+    ],
+    "image": "img/approved_uploads/uploaded-example.png",
+    "ingredients": [
+      {
+        "product": "Овсяные хлопья с надписью ВАРИТЬ НЕ МЕНЕЕ 15 МИНУТ",
+        "grams": 50
+      },
+      {
+        "product": "Бананы",
+        "grams": 100
+      },
+      {
+        "product": "Греческий йогурт",
+        "grams": 120
+      }
+    ],
+    "instructions": [
+      "Сварить овсяные хлопья на воде или молоке.",
+      "Добавить нарезанный банан.",
+      "Сверху положить греческий йогурт и перемешать."
+    ],
+    "author": "Демо-рецепт",
+    "tags": [
+      "завтрак",
+      "быстро",
+      "сытно"
+    ],
+    "num_id": 1,
+    "calories": 354.0,
+    "protein": 16.6,
+    "fat": 5.4,
+    "carbs": 58.8
+  },
+  {
+    "id": "chicken-buckwheat-broccoli",
+    "name": "Куриная грудка с гречей и брокколи",
+    "meal_types": [
+      "lunch",
+      "dinner"
+    ],
+    "image": "img/approved_uploads/uploaded-example.png",
+    "ingredients": [
+      {
+        "product": "Филе грудки куриное",
+        "grams": 160
+      },
+      {
+        "product": "Греча",
+        "grams": 70
+      },
+      {
+        "product": "Капуста брокколи",
+        "grams": 150
+      }
+    ],
+    "instructions": [
+      "Отварить гречку до готовности.",
+      "Куриную грудку запечь или приготовить на сковороде без лишнего масла.",
+      "Брокколи отварить или приготовить на пару."
+    ],
+    "author": "Демо-рецепт",
+    "tags": [
+      "обед",
+      "белок",
+      "баланс"
+    ],
+    "num_id": 2,
+    "calories": 451.1,
+    "protein": 41.5,
+    "fat": 8.5,
+    "carbs": 60.9
+  },
+  {
+    "id": "salmon-avocado-salad",
+    "name": "Салат с лососем и авокадо",
+    "meal_types": [
+      "lunch",
+      "dinner"
+    ],
+    "image": "img/hero.jpg",
+    "ingredients": [
+      {
+        "product": "Лосось",
+        "grams": 120
+      },
+      {
+        "product": "Авокадо",
+        "grams": 70
+      },
+      {
+        "product": "Огурцы",
+        "grams": 100
+      },
+      {
+        "product": "Руккола",
+        "grams": 40
+      },
+      {
+        "product": "Томаты",
+        "grams": 100
+      }
+    ],
+    "instructions": [
+      "Нарезать овощи и авокадо.",
+      "Добавить готовый лосось.",
+      "Перемешать с зеленью, лимоном и специями по вкусу."
+    ],
+    "author": "Демо-рецепт",
+    "tags": [
+      "ужин",
+      "рыба",
+      "овощи"
+    ],
+    "num_id": 3,
+    "calories": 358.2,
+    "protein": 30.5,
+    "fat": 21.7,
+    "carbs": 14.4
+  },
+  {
+    "id": "cottage-cheese-berries",
+    "name": "Творог с ягодами",
+    "meal_types": [
+      "breakfast",
+      "snack"
+    ],
+    "image": "img/myth2.jpg",
+    "ingredients": [
+      {
+        "product": "Творог 5%",
+        "grams": 180
+      },
+      {
+        "product": "Клубника",
+        "grams": 100
+      },
+      {
+        "product": "Черника",
+        "grams": 50
+      }
+    ],
+    "instructions": [
+      "Положить творог в миску.",
+      "Добавить ягоды.",
+      "По желанию добавить заменитель сахара или корицу."
+    ],
+    "author": "Демо-рецепт",
+    "tags": [
+      "перекус",
+      "белок",
+      "десерт"
+    ],
+    "num_id": 4,
+    "calories": 278.3,
+    "protein": 30.0,
+    "fat": 9.6,
+    "carbs": 18.9
+  }
+]

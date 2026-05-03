@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Гид по питанию</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="site-header"></header>
+<main class="py-4"><div class="container">
+
+<article class="card p-4 soft-shadow">
+  <h1 class="page-title">Гид: как пользоваться сайтом</h1>
+  <p class="lead">Эта версия сайта полностью статическая и работает на GitHub Pages. Все данные берутся из файлов в папке <code>data</code>.</p>
+  <h4>1. Продукты</h4><p>Продукты лежат в <code>data/products.json</code>. Их можно искать, фильтровать и использовать в расчётах.</p>
+  <h4>2. Рецепты</h4><p>Рецепты лежат в <code>data/dishes.json</code>. После модерации добавляй новый объект в этот файл, и сайт обновится после коммита.</p>
+  <h4>3. Модерация</h4><p>Так как GitHub Pages не запускает Python/SQLite, заявки пользователей лучше принимать через GitHub Issues. После проверки ты переносишь рецепт или статью в JSON.</p>
+  <h4>4. Профиль</h4><p>Профиль сохраняется только в браузере пользователя через <code>localStorage</code>. Это безопасно для статического сайта и не требует базы данных.</p>
+</article>
+</div></main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/layout.js"></script>
+
+</body>
+</html>

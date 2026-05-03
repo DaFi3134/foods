@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Библиотека</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="site-header"></header>
+<main class="py-4"><div class="container">
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div><h1 class="page-title mb-1">Библиотека</h1><p class="small-muted mb-0">Рецепты и продукты из JSON-файлов.</p></div>
+  <div class="d-flex gap-2"><a class="btn btn-primary" href="submit_recipe.html">Добавить рецепт</a><a class="btn btn-outline-secondary" href="products.html">Все продукты</a></div>
+</div>
+<div class="form-section mb-4">
+  <div class="row g-2">
+    <div class="col-lg-6"><input id="searchInput" class="form-control" placeholder="Поиск по названию, тегу или категории"></div>
+    <div class="col-lg-3"><select id="showSelect" class="form-select"><option value="both">Блюда и продукты</option><option value="dishes">Только блюда</option><option value="products">Только продукты</option></select></div>
+    <div class="col-lg-3"><select id="mealSelect" class="form-select"><option value="">Любой приём пищи</option><option value="breakfast">Завтрак</option><option value="snack">Перекус</option><option value="lunch">Обед</option><option value="dinner">Ужин</option></select></div>
+  </div>
+</div>
+<h3 id="dishesTitle" class="mb-3">Блюда</h3>
+<div class="row g-4 mb-5" id="dishesList"></div>
+<h3 id="productsTitle" class="mb-3">Продукты</h3>
+<div class="row g-3" id="productsList"></div>
+</div></main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/library.js"></script>
+</body>
+</html>

@@ -1,1 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>healthy food by Filippov</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="site-header"></header>
+<main class="py-4"><div class="container">
 
+<section class="hero">
+  <div class="hero-overlay">
+    <span class="badge bg-success align-self-start mb-3">GitHub Pages версия</span>
+    <h1 class="display-5 fw-bold">Ешь вкусно, считай просто, выбирай осознанно</h1>
+    <p class="lead col-lg-8">Статический сайт с рецептами, продуктами, калькулятором, профилем в браузере и модерацией заявок через GitHub Issues.</p>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-primary btn-lg" href="library.html">Открыть библиотеку</a>
+      <a class="btn btn-light btn-lg" href="submit_recipe.html">Добавить рецепт</a>
+    </div>
+  </div>
+</section>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="kpi-card"><div class="small-muted">Продуктов</div><h2 id="productsCount">—</h2></div></div>
+  <div class="col-md-4"><div class="kpi-card"><div class="small-muted">Рецептов</div><h2 id="dishesCount">—</h2></div></div>
+  <div class="col-md-4"><div class="kpi-card"><div class="small-muted">Мифов и статей</div><h2 id="mythsCount">—</h2></div></div>
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-md-3"><div class="feature-card teal"><div class="icon">🥗</div><h5>Библиотека</h5><p>Рецепты и продукты с поиском.</p><a class="stretched-link" href="library.html"></a></div></div>
+  <div class="col-md-3"><div class="feature-card orange"><div class="icon">🧮</div><h5>Калькулятор</h5><p>BMR, TDEE и BMI прямо в браузере.</p><a class="stretched-link" href="calc.html"></a></div></div>
+  <div class="col-md-3"><div class="feature-card blue"><div class="icon">📅</div><h5>Планировщик</h5><p>Автоматический план питания на день.</p><a class="stretched-link" href="planner.html"></a></div></div>
+  <div class="col-md-3"><div class="feature-card green"><div class="icon">🧠</div><h5>Мифы</h5><p>Раздел статей после модерации.</p><a class="stretched-link" href="myths.html"></a></div></div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="page-title mb-0">Последние рецепты</h2>
+  <a href="library.html">Все рецепты</a>
+</div>
+<div class="row g-4" id="latestRecipes"></div>
+</div></main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>

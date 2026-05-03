@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Модерация</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="site-header"></header>
+<main class="py-4"><div class="container">
+
+<article class="card p-4 soft-shadow">
+  <h1 class="page-title">Модерация в статической версии</h1>
+  <p>Настоящая Flask-админка не работает на GitHub Pages, потому что там нет Python, сессий и SQLite. В этой версии модерация делается через GitHub:</p>
+  <ol>
+    <li>Пользователь отправляет заявку через <a href="submit_recipe.html">форму рецепта</a> или <a href="submit_myth.html">форму статьи</a>.</li>
+    <li>Ты проверяешь созданный Issue в репозитории.</li>
+    <li>Если всё подходит, переносишь данные в <code>data/dishes.json</code> или <code>data/myths.json</code>.</li>
+    <li>Делаешь commit, и GitHub Pages обновляет сайт.</li>
+  </ol>
+  <p class="alert alert-info mb-0">Старая страница <code>admin_moderation.html</code> оставлена как памятка, чтобы структура проекта не терялась.</p>
+</article>
+
+</div></main>
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/layout.js"></script>
+
+</body>
+</html>

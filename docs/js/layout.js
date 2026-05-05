@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return `
       <div class="dropdown ms-lg-3 profile-dropdown">
-        <a class="d-flex align-items-center text-decoration-none profile-menu-link" href="#" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="d-flex align-items-center text-decoration-none profile-menu-link" href="profile.html" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
           <div class="avatar-circle me-2">${avatarText}</div>
           <div class="d-none d-md-block text-start">
             <div class="fw-semibold text-dark">Профиль</div>

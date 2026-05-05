@@ -165,7 +165,6 @@
   document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("form.pretty-submit-form").forEach(form => {
       form.setAttribute("action", "#");
-      showSetupNotice(form);
       form.addEventListener("submit", handleSubmit);
     });
   });

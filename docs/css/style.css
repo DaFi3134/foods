@@ -1263,3 +1263,316 @@ a { text-decoration: none; }
     flex-direction: column;
   }
 }
+
+/* Submission hub and email workflow */
+.submit-hub-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255,255,255,.25), transparent 28%),
+    radial-gradient(circle at 8% 88%, rgba(255,138,61,.22), transparent 30%),
+    linear-gradient(135deg, #101827 0%, #0f766e 46%, #2f9df6 100%);
+}
+
+.submission-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.submission-option-card {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  min-height: 230px;
+  padding: 24px;
+  border-radius: 26px;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid rgba(15, 118, 110, .08);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.submission-option-card:hover {
+  transform: translateY(-4px);
+  color: inherit;
+  border-color: rgba(23, 183, 163, .35);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, .12);
+}
+
+.submission-option-card h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.submission-option-card p {
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.submission-option-card span {
+  color: #08796d;
+  font-weight: 700;
+}
+
+.submission-option-icon,
+.submission-admin-icon,
+.submission-setup-icon,
+.thank-you-icon {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.7rem;
+}
+
+.submission-option-icon.product { background: linear-gradient(135deg, #17b7a3, #2fd6b3); }
+.submission-option-icon.recipe { background: linear-gradient(135deg, #ff8a3d, #ffb36d); }
+.submission-option-icon.article { background: linear-gradient(135deg, #7c3aed, #2f9df6); }
+
+.submission-admin-note {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 26px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, #ffffff, #f8fffd);
+  border: 1px solid rgba(23, 183, 163, .16);
+}
+
+.submission-admin-icon {
+  background: linear-gradient(135deg, #0f766e, #2f9df6);
+}
+
+.submission-admin-note h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.submission-admin-note p {
+  color: var(--muted);
+}
+
+.submission-setup-notice {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+  background: #fff8ed;
+  border: 1px solid #ffdfb8;
+  color: #7a4300;
+}
+
+.submission-setup-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff8a3d, #ffb36d);
+  font-size: 1.35rem;
+}
+
+.submission-setup-notice h5 {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.submission-setup-notice p {
+  margin: 0;
+}
+
+.submission-status {
+  display: none;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.submission-status.info,
+.submission-status.success,
+.submission-status.warning,
+.submission-status.error {
+  display: block;
+}
+
+.submission-status.info {
+  background: #ecfdf9;
+  color: #08796d;
+  border: 1px solid rgba(23, 183, 163, .28);
+}
+
+.submission-status.success {
+  background: #ecfdf9;
+  color: #08796d;
+  border: 1px solid rgba(23, 183, 163, .28);
+}
+
+.submission-status.warning {
+  background: #fff8ed;
+  color: #7a4300;
+  border: 1px solid #ffdfb8;
+}
+
+.submission-status.error {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+}
+
+.thank-you-card {
+  max-width: 680px;
+  text-align: center;
+  padding: 42px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 84% 14%, rgba(23,183,163,.12), transparent 28%),
+    #fff;
+}
+
+.thank-you-icon {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 20px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #17b7a3, #2f9df6);
+  font-size: 2.4rem;
+}
+
+.thank-you-card h1 {
+  font-weight: 700;
+  letter-spacing: -.03em;
+}
+
+.thank-you-card p {
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+@media (max-width: 991px) {
+  .submission-options {
+    grid-template-columns: 1fr;
+  }
+
+  .submission-option-card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 575px) {
+  .submission-option-card,
+  .submission-admin-note,
+  .submission-setup-notice {
+    flex-direction: column;
+  }
+}
+
+/* Supabase moderation admin */
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #ffffff, #f7fff9);
+}
+
+.admin-toolbar h2 {
+  font-weight: 700;
+}
+
+.admin-submissions-list {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-submission-card {
+  padding: 22px;
+  border-radius: 24px;
+  background: #fff;
+  border: 1px solid rgba(31, 41, 55, .08);
+}
+
+.admin-submission-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.admin-submission-top h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.admin-fields-table {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.admin-field-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 260px) 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(31, 41, 55, .08);
+}
+
+.admin-field-row:last-child {
+  border-bottom: 0;
+}
+
+.admin-field-row strong {
+  color: #334155;
+}
+
+.admin-field-row span {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.admin-edit-box summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.admin-json-editor {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: .9rem;
+}
+
+@media (max-width: 768px) {
+  .admin-toolbar,
+  .admin-submission-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-actions {
+    justify-content: flex-start;
+  }
+
+  .admin-field-row {
+    grid-template-columns: 1fr;
+  }
+}

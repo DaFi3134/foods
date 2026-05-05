@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const subtitle = data.weight ? `${escapeHtml(data.weight)} кг · ${escapeHtml(data.height || "—")} см` : "Персонализация";
 
     return `
-      <div class="ms-lg-3 profile-dropdown">
+      <div class="ms-lg-3 profile-dropdown position-relative">
         <a class="d-flex align-items-center text-decoration-none profile-menu-link" 
            href="#" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
           <div class="avatar-circle me-2">${avatarText}</div>

@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const header = document.getElementById("site-header");
   const current = window.location.pathname.split("/").pop() || "index.html";
+  if (current === "") current = "index.html";
 
   function hasSavedProfile() {
     return Boolean(localStorage.getItem("cf_profile"));

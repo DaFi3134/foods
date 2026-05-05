@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const header = document.getElementById("site-header");
+  if (!header) return;
+
+  // Определяем текущую страницу
   let current = window.location.pathname.split("/").pop();
   if (current === "") current = "index.html";
 
@@ -8,14 +11,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function profileMenuHtml() {
-    const hasProfile = Boolean(localStorage.getItem("cf_profile"));
+    const hasProfile = hasSavedProfile();
 
     if (!hasProfile) {
-      // Профиль не создан — показываем кнопку «Создать профиль»
+      // Профиль не создан — кнопка "Создать профиль"
       return `<a class="btn btn-outline-primary btn-sm ms-lg-3" href="profile.html" id="profileCreateBtn">Создать профиль</a>`;
     }
 
-    // Профиль создан — показываем дропдаун с «Мои данные» и «Очистить профиль»
+    // Профиль создан — дропдаун с Мои данные и Очистить профиль
     const profile = getProfile();
     const data = profile.data || {};
     const avatarText = data.weight ? `${escapeHtml(data.weight)}` : `<i class="bi bi-person-fill"></i>`;
@@ -23,7 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return `
       <div class="ms-lg-3 profile-dropdown">
-        <a class="d-flex align-items-center text-decoration-none profile-menu-link" href="#" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="d-flex align-items-center text-decoration-none profile-menu-link" 
+           href="#" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
           <div class="avatar-circle me-2">${avatarText}</div>
           <div class="d-none d-md-block text-start">
             <div class="fw-semibold text-dark">Профиль</div>
@@ -38,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderHeader() {
-    if (!header) return;
     const nav = [
       ["index.html", "Главная"],
       ["library.html", "Библиотека"],
@@ -71,12 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </nav>`;
 
+    // Кнопка очистки профиля
     const clearBtn = document.getElementById("clearProfileFromMenu");
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
         if (confirm("Очистить сохранённый профиль?")) {
           clearProfile();
-          renderHeader();
+          renderHeader(); // перерендер шапки
         }
       });
     }
@@ -84,13 +88,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderHeader();
 
+  // Footer
   const footer = document.getElementById("site-footer");
   if (footer) {
     footer.innerHTML = `
       <footer class="bg-white border-top py-3 mt-5">
         <div class="container d-flex flex-wrap justify-content-between gap-2 small text-muted">
           <div>© healthy food — Питание для яркой жизни</div>
-          <div><a href="guide.html">Гид</a> · <a href="submit_recipe.html">Добавить рецепт</a> · <a href="submit_product.html">Добавить продукт</a> · <a href="submit_myth.html">Добавить миф/статью</a></div>
+          <div>
+            <a href="guide.html">Гид</a> · 
+            <a href="submit_recipe.html">Добавить рецепт</a> · 
+            <a href="submit_product.html">Добавить продукт</a> · 
+            <a href="submit_myth.html">Добавить миф/статью</a>
+          </div>
         </div>
       </footer>`;
   }

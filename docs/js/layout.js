@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ["index.html", "Главная"],
       ["library.html", "Библиотека"],
       ["myths.html", "Мифы"],
+      ["guide.html", "Инструкция"],
       ["calc.html", "Калькулятор"],
       ["check_intake.html", "Проверка рациона"],
       ["planner.html", "Планировщик"],

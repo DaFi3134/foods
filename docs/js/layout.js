@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const header = document.getElementById("site-header");
-  const current = window.location.pathname.split("/").pop() || "index.html";
+  let current = window.location.pathname.split("/").pop();
   if (current === "") current = "index.html";
 
   function hasSavedProfile() {
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return `
       <div class="dropdown ms-lg-3 profile-dropdown">
-        <a class="d-flex align-items-center text-decoration-none profile-menu-link" href="#" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="d-flex align-items-center text-decoration-none profile-menu-link" href="profile.html" id="profileMenu">
           <div class="avatar-circle me-2">${avatarText}</div>
           <div class="d-none d-md-block text-start">
             <div class="fw-semibold text-dark">Профиль</div>

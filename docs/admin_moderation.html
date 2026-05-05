@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Модерация</title>
+  <title>Настройка Supabase — healthy food</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -12,25 +12,76 @@
 </head>
 <body>
 <header id="site-header"></header>
-<main class="py-4"><div class="container">
 
-<article class="card p-4 soft-shadow">
-  <h1 class="page-title">Модерация в статической версии</h1>
-  <p>Настоящая Flask-админка не работает на GitHub Pages, потому что там нет Python, сессий и SQLite. В этой версии модерация делается через GitHub:</p>
-  <ol>
-    <li>Пользователь отправляет заявку через <a href="submit_recipe.html">форму рецепта</a> или <a href="submit_myth.html">форму статьи</a>.</li>
-    <li>Ты проверяешь созданный Issue в репозитории.</li>
-    <li>Если всё подходит, переносишь данные в <code>data/dishes.json</code> или <code>data/myths.json</code>.</li>
-    <li>Делаешь commit, и GitHub Pages обновляет сайт.</li>
-  </ol>
-  <p class="alert alert-info mb-0">Старая страница <code>admin_moderation.html</code> оставлена как памятка, чтобы структура проекта не терялась.</p>
-</article>
+<main class="py-4">
+  <div class="container">
+    <section class="submit-hero submit-hub-hero soft-shadow mb-4">
+      <div class="submit-hero-content">
+        <span class="submit-eyebrow"><i class="bi bi-database-check"></i> Для владельца сайта</span>
+        <h1>Как подключить заявки и админку</h1>
+        <p>Формы продуктов, рецептов и статей сохраняют заявки в Supabase. В админке можно проверить материал, исправить поля и нажать «Одобрить» — после этого он появляется на сайте.</p>
+      </div>
+      <div class="submit-hero-badge">
+        <i class="bi bi-check2-circle"></i>
+        <span>Без ручной правки JSON и GitHub</span>
+      </div>
+    </section>
 
-</div></main>
+    <section class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <article class="instruction-step soft-shadow h-100">
+          <div class="instruction-number">1</div>
+          <div>
+            <h3>Создайте проект Supabase</h3>
+            <p>После создания проекта откройте <code>SQL Editor</code> и запустите файл <code>docs/supabase-schema.sql</code>. Перед запуском замените <code>YOUR_ADMIN_EMAIL</code> на свой email.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-6">
+        <article class="instruction-step soft-shadow h-100">
+          <div class="instruction-number">2</div>
+          <div>
+            <h3>Создайте пользователя владельца</h3>
+            <p>В Supabase откройте <code>Authentication → Users</code>, добавьте пользователя с тем же email и задайте пароль. Этим email и паролем вы будете входить в <code>admin.html</code>.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-6">
+        <article class="instruction-step soft-shadow h-100">
+          <div class="instruction-number">3</div>
+          <div>
+            <h3>Вставьте ключи проекта</h3>
+            <p>Откройте <code>docs/js/submission-config.js</code> и вставьте туда <code>Project URL</code>, <code>anon key</code> и свой <code>adminEmail</code>. Secret/service_role ключи на сайт не вставляйте.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-6">
+        <article class="instruction-step soft-shadow h-100">
+          <div class="instruction-number">4</div>
+          <div>
+            <h3>Проверьте полный путь</h3>
+            <p>Отправьте тестовый продукт через <a href="submit_product.html">форму</a>, откройте <a href="admin.html">админку</a>, войдите, нажмите «Одобрить» и проверьте, что продукт появился в каталоге.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="submission-admin-note soft-shadow">
+      <div class="submission-admin-icon"><i class="bi bi-shield-lock"></i></div>
+      <div>
+        <h2>Как работает безопасность</h2>
+        <p class="mb-0">Посетители могут только отправлять новые заявки и читать уже одобренные материалы. Просматривать ожидающие заявки и менять статус может только пользователь Supabase Auth с email, который вы указали в SQL-политиках.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
 <footer id="site-footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/core.js"></script>
 <script src="js/layout.js"></script>
-
 </body>
 </html>

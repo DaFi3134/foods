@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Предложить материал — healthy food</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="site-header"></header>
+
+<main class="py-4">
+  <div class="container">
+    <section class="submit-hero submit-hub-hero soft-shadow mb-4">
+      <div class="submit-hero-content">
+        <span class="submit-eyebrow"><i class="bi bi-inbox"></i> Центр заявок</span>
+        <h1>Предложить материал на сайт</h1>
+        <p>
+          Пользователь заполняет форму, заявка сохраняется в Supabase,
+          а после проверки материал можно одобрить в админке без правок GitHub.
+        </p>
+      </div>
+      <div class="submit-hero-badge">
+        <i class="bi bi-envelope-check"></i>
+        <span>Продукты, рецепты и статьи — в одном месте</span>
+      </div>
+    </section>
+
+    <section class="submission-options mb-4">
+      <a class="submission-option-card soft-shadow" href="submit_product.html">
+        <div class="submission-option-icon product"><i class="bi bi-basket2"></i></div>
+        <div>
+          <h2>Продукт</h2>
+          <p>Название, категория, КБЖУ, бренд, источник данных и комментарий.</p>
+          <span>Открыть форму <i class="bi bi-arrow-right"></i></span>
+        </div>
+      </a>
+
+      <a class="submission-option-card soft-shadow" href="submit_recipe.html">
+        <div class="submission-option-icon recipe"><i class="bi bi-journal-plus"></i></div>
+        <div>
+          <h2>Рецепт</h2>
+          <p>Ингредиенты, граммовки, шаги приготовления, фото и приём пищи.</p>
+          <span>Открыть форму <i class="bi bi-arrow-right"></i></span>
+        </div>
+      </a>
+
+      <a class="submission-option-card soft-shadow" href="submit_article.html">
+        <div class="submission-option-icon article"><i class="bi bi-newspaper"></i></div>
+        <div>
+          <h2>Статья</h2>
+          <p>Заголовок, тема, краткая суть, полный текст и источники.</p>
+          <span>Открыть форму <i class="bi bi-arrow-right"></i></span>
+        </div>
+      </a>
+    </section>
+
+    <section class="submission-admin-note soft-shadow">
+      <div class="submission-admin-icon"><i class="bi bi-gear"></i></div>
+      <div>
+        <h2>Чтобы заявки сохранялись и публиковались</h2>
+        <p>
+          Откройте <code>docs/js/submission-config.js</code> и вставьте <code>Project URL</code> и <code>anon key</code> из Supabase. Затем откройте <code>admin.html</code>, войдите и одобряйте заявки.
+        </p>
+        <a class="btn btn-outline-primary" href="admin_moderation.html">Инструкция по Supabase</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer id="site-footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/layout.js"></script>
+</body>
+</html>

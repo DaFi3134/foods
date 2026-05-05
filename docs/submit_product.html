@@ -60,8 +60,8 @@
           <div class="submit-form-icon"><i class="bi bi-plus-square"></i></div>
         </div>
 
-        <!-- Замени XXXXXXXX на свой ID формы Formspree -->
-        <form class="pretty-submit-form" action="https://formspree.io/f/xrejedrd" method="POST">
+        <!-- Supabase задаётся централизованно в js/submission-config.js -->
+        <form class="pretty-submit-form" data-submission-type="Продукт" action="#" method="POST">
           <input type="hidden" name="_subject" value="Новая заявка продукта — healthy food">
           <input type="hidden" name="Тип заявки" value="Продукт">
           <input type="text" name="_gotcha" class="d-none" tabindex="-1" autocomplete="off">
@@ -159,7 +159,7 @@
           <div class="submit-bottom">
             <div class="submit-note">
               <i class="bi bi-info-circle"></i>
-              Продукт не добавится в базу автоматически — сначала он пройдёт модерацию.
+              Продукт попадёт в админку и появится на сайте после одобрения.
             </div>
             <button class="btn btn-primary btn-lg submit-btn" type="submit">
               <i class="bi bi-send"></i> Отправить на модерацию
@@ -175,5 +175,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/core.js"></script>
 <script src="js/layout.js"></script>
+<script src="js/submission-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-content.js"></script>
+<script src="js/submissions.js"></script>
 </body>
 </html>

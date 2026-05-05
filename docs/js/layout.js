@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const header = document.getElementById("site-header");
   if (!header) return;
 
-  // Определяем текущую страницу
+  // Текущая страница
   let current = window.location.pathname.split("/").pop();
   if (current === "") current = "index.html";
 
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return `<a class="btn btn-outline-primary btn-sm ms-lg-3" href="profile.html" id="profileCreateBtn">Создать профиль</a>`;
     }
 
-    // Профиль создан — дропдаун с Мои данные и Очистить профиль
+    // Профиль создан — дропдаун с пунктами под аватаром
     const profile = getProfile();
     const data = profile.data || {};
     const avatarText = data.weight ? `${escapeHtml(data.weight)}` : `<i class="bi bi-person-fill"></i>`;
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return `
       <div class="ms-lg-3 profile-dropdown position-relative">
-        <a class="d-flex align-items-center text-decoration-none profile-menu-link" 
+        <a class="d-flex align-items-center text-decoration-none profile-menu-link"
            href="#" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
           <div class="avatar-circle me-2">${avatarText}</div>
           <div class="d-none d-md-block text-start">

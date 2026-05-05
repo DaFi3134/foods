@@ -1,5 +1,5 @@
 
-const DATA_PATHS = {
+let DATA_PATHS = {
   products: "data/products.json",
   dishes: "data/dishes.json",
   myths: "data/myths.json"

@@ -57,8 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
        <span class="stat-pill">Углеводы: ${bju.carbs} г</span>`;
   }
   function addTo(arr, input) {
-    const value = input.value.trim().toLowerCase();
-    if (value && !arr.includes(value)) arr.push(value);
+    const values = input.value
+      .split(/[;,]/)
+      .map(value => value.trim().toLowerCase())
+      .filter(Boolean);
+
+    values.forEach(value => {
+      if (!arr.includes(value)) arr.push(value);
+    });
+
     input.value = "";
     saveProfile(profile);
     renderAll();

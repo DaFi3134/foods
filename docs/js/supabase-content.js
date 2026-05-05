@@ -273,13 +273,11 @@
   async function insertSubmission(submission) {
     const supabaseClient = getClient();
     if (!supabaseClient) throw new Error("Supabase пока не подключён. Заполни docs/js/submission-config.js.");
-    const { data, error } = await supabaseClient
+    const { error } = await supabaseClient
       .from("submissions")
-      .insert(submission)
-      .select("id")
-      .single();
+      .insert(submission);
     if (error) throw error;
-    return data;
+    return true;
   }
 
   async function listSubmissions(status = "all") {
@@ -298,15 +296,22 @@
   async function updateSubmission(id, changes) {
     const supabaseClient = getClient();
     if (!supabaseClient) throw new Error("Supabase пока не подключён. Заполни docs/js/submission-config.js.");
-    const { data, error } = await supabaseClient
+
+    // Не делаем .select().single() после UPDATE: при RLS это может выглядеть как
+    // "ничего не происходит", если обновление разрешено, а чтение обновлённой строки
+    // ограничено политиками. Для смены статуса достаточно самого UPDATE.
+    const { error, count } = await supabaseClient
       .from("submissions")
-      .update(changes)
-      .eq("id", id)
-      .select("*")
-      .single();
+      .update(changes, { count: "exact" })
+      .eq("id", id);
+
     if (error) throw error;
+    if (count === 0) {
+      throw new Error("Строка не обновилась. Проверь adminEmail в submission-config.js и email в RLS-политике Supabase.");
+    }
+
     approvedCache = null;
-    return data;
+    return true;
   }
 
   async function signIn(email, password) {

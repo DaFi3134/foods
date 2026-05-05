@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /owner-panel.html
+Disallow: /admin.html
+Disallow: /admin_moderation.html
+Disallow: /submit.html
+Disallow: /submit_article.html
+Disallow: /submit_myth.html
+Disallow: /submit_product.html
+Disallow: /submit_recipe.html

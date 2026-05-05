@@ -1,23 +1,9 @@
--- SQL для Supabase.
--- Перед запуском замени YOUR_ADMIN_EMAIL на свой email владельца сайта.
--- Этот же email нужно указать в docs/js/submission-config.js -> adminEmail.
+-- Run this in Supabase SQL Editor if you already created the submissions table
+-- and see: column submissions.updated_at does not exist.
+-- Replace YOUR_ADMIN_EMAIL in the policies below before running.
 
 create extension if not exists pgcrypto;
 
-create table if not exists public.submissions (
-  id uuid primary key default gen_random_uuid(),
-  type text not null check (type in ('product', 'recipe', 'article', 'myth')),
-  title text not null,
-  author_name text,
-  author_email text,
-  payload jsonb not null,
-  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
-  moderator_note text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
--- Migration-safe columns for existing tables created by older versions.
 alter table public.submissions add column if not exists type text;
 alter table public.submissions add column if not exists title text;
 alter table public.submissions add column if not exists author_name text;
@@ -28,7 +14,14 @@ alter table public.submissions add column if not exists moderator_note text;
 alter table public.submissions add column if not exists created_at timestamptz default now();
 alter table public.submissions add column if not exists updated_at timestamptz default now();
 
-update public.submissions set type = coalesce(nullif(type, ''), 'article'), title = coalesce(nullif(title, ''), 'Untitled submission'), payload = coalesce(payload, '{}'::jsonb), status = coalesce(nullif(status, ''), 'pending'), created_at = coalesce(created_at, now()), updated_at = coalesce(updated_at, now());
+update public.submissions
+set
+  type = coalesce(nullif(type, ''), 'article'),
+  title = coalesce(nullif(title, ''), 'Untitled submission'),
+  payload = coalesce(payload, '{}'::jsonb),
+  status = coalesce(nullif(status, ''), 'pending'),
+  created_at = coalesce(created_at, now()),
+  updated_at = coalesce(updated_at, now());
 
 alter table public.submissions alter column type set not null;
 alter table public.submissions alter column title set not null;
@@ -59,10 +52,8 @@ execute function public.set_updated_at();
 
 alter table public.submissions enable row level security;
 
--- Нужно, если в проекте выключено "Automatically expose new tables".
 grant usage on schema public to anon, authenticated;
 grant select, insert, update, delete on table public.submissions to anon, authenticated;
-
 
 drop policy if exists "Anyone can create pending submissions" on public.submissions;
 create policy "Anyone can create pending submissions"

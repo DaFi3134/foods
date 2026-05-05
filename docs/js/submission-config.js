@@ -4,9 +4,9 @@
 // 2) anon public key / publishable key
 // Secret/service_role ключи сюда НЕ вставлять.
 window.SUPABASE_CONFIG = {
-  url: "https://YOUR_PROJECT_ID.supabase.co",
-  anonKey: "YOUR_SUPABASE_ANON_KEY",
-  adminEmail: "your-email@example.com"
+  url: "https://qygayinuchdngerceupt.supabase.co",
+  anonKey: "sb_publishable_7S_qFgU6NZXyMvOA1RV4Tg_12ZyM4Dq",
+  adminEmail: "i.klimka@gmail.com"
 };
 
 window.SUBMISSION_CONFIG = {

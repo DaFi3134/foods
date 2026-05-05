@@ -1,3 +1,8 @@
+window.SUPABASE_CONFIG = {
+  url: "https://qygayinuchdngerceupt.supabase.co",
+  anonKey: "sb_publishable_7S_qFgU6NZXyMvOA1RV4Tg_12ZyM4Dq",
+  adminEmail: "i.klimka694@gmail.com"
+};
 
 (function () {
   const PLACEHOLDER_RE = /(qygayinuchdngerceupt|sb_publishable_7S_qFgU6NZXyMvOA1RV4Tg_12ZyM4Dq|i.klimka694@gmail.com)/i;

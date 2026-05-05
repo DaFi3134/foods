@@ -35,7 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderHeader() {
     if (!header) return;
-    header.innerHTML = `<nav> ... ${profileMenuHtml()} ... </nav>`;
     const nav = [
       ["index.html", "Главная"],
       ["library.html", "Библиотека"],

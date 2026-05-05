@@ -12,20 +12,65 @@
 </head>
 <body>
 <header id="site-header"></header>
-<main class="py-4"><div class="container">
+<main class="planner-page py-4"><div class="container">
 
-<h1 class="page-title mb-2">Планировщик питания</h1>
-<p class="small-muted mb-4">План строится по калориям, количеству приёмов пищи и данным из профиля: аллергии, список «избегать» и любимые продукты/блюда.</p>
+<section class="planner-hero soft-shadow mb-4">
+  <div class="planner-hero-content">
+    <span class="planner-eyebrow"><i class="bi bi-stars"></i> Умный подбор рациона</span>
+    <h1>Планировщик питания</h1>
+    <p>Собирает день по калориям, количеству приёмов пищи и данным из профиля: аллергии, список «избегать» и любимые продукты/блюда.</p>
+  </div>
+  <div class="planner-hero-card">
+    <i class="bi bi-shield-check"></i>
+    <strong>Профиль учитывается автоматически</strong>
+    <span>Нежелательные продукты исключаются, любимые — получают приоритет.</span>
+  </div>
+</section>
+
 <div id="plannerRestrictions"></div>
-<div class="form-section mb-4">
-  <form id="plannerForm" class="row g-3">
-    <div class="col-md-4"><label class="form-label">Калории на день</label><input id="calories" type="number" class="form-control" value="2000"></div>
-    <div class="col-md-4"><label class="form-label">Количество приёмов</label><select id="meals" class="form-select"><option value="4">4 приёма</option><option value="3">3 приёма</option><option value="5">5 приёмов</option></select></div>
-    <div class="col-md-4 d-flex align-items-end"><button class="btn btn-primary w-100">Составить план</button></div>
+
+<section class="planner-control-panel soft-shadow mb-4">
+  <div class="planner-control-head">
+    <div>
+      <div class="small-muted mb-1">Настройки дня</div>
+      <h2>Составить рацион</h2>
+    </div>
+    <div class="planner-control-icon"><i class="bi bi-calendar2-heart"></i></div>
+  </div>
+  <form id="plannerForm" class="planner-form row g-3 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label">Калории на день</label>
+      <div class="planner-input-wrap">
+        <i class="bi bi-fire"></i>
+        <input id="calories" type="number" min="600" step="50" class="form-control" value="2000">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Количество приёмов</label>
+      <div class="planner-input-wrap">
+        <i class="bi bi-grid-3x3-gap"></i>
+        <select id="meals" class="form-select">
+          <option value="4">4 приёма</option>
+          <option value="3">3 приёма</option>
+          <option value="5">5 приёмов</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <button class="btn btn-primary planner-generate-btn w-100"><i class="bi bi-magic"></i> Составить план</button>
+    </div>
   </form>
-</div>
+</section>
+
 <div id="planOutput" class="mb-4"></div>
-<div class="alert alert-info">Важно: аллергии и «избегать» исключают блюда полностью. Если подходящих блюд мало, добавь больше рецептов или смягчи ограничения в профиле.</div>
+
+<div class="planner-notice soft-shadow">
+  <div class="planner-notice-icon"><i class="bi bi-info-circle"></i></div>
+  <div>
+    <strong>Важно:</strong> аллергии и «избегать» исключают блюда полностью. Если подходящих блюд мало, добавь больше рецептов или смягчи ограничения в профиле.
+  </div>
+</div>
+
 </div></main>
 <footer id="site-footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

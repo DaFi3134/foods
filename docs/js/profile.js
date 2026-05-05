@@ -19,12 +19,42 @@ document.addEventListener("DOMContentLoaded", () => {
   function chip(text, arr, render) {
     return `<span class="chip">${escapeHtml(text)} <button type="button" data-value="${escapeHtml(text)}">×</button></span>`;
   }
+       
+  function calcBJU(data) {
+    const weight = Number(data.weight) || 70;
+    const height = Number(data.height) || 175;
+    const age = Number(data.age) || 25;
+    const sex = data.sex || "male";
+    const activity = data.activity || "sedentary";
+
+    // BMR по формуле Миффлина-Сан Жеора
+    let bmr = sex === "male"
+        ? 10 * weight + 6.25 * height - 5 * age + 5
+        : 10 * weight + 6.25 * height - 5 * age - 161;
+
+    const activityCoeff = { sedentary:1.2, light:1.375, moderate:1.55, active:1.725, very:1.9 }[activity] || 1.2;
+    const tdee = bmr * activityCoeff;
+
+    const protein = Math.round((tdee * 0.3) / 4);
+    const fat = Math.round((tdee * 0.3) / 9);
+    const carbs = Math.round((tdee * 0.4) / 4);
+
+    return { protein, fat, carbs };
+  }
+
   function renderAll() {
     likedBox.innerHTML = (profile.prefs.liked || []).map(x => chip(x)).join("");
     dislikedBox.innerHTML = (profile.prefs.disliked || []).map(x => chip(x)).join("");
     allergyBox.innerHTML = (profile.allergies || []).map(x => chip(x)).join("");
+
     const stats = calcProfileStats(profile.data);
     statsBox.innerHTML = `<span class="stat-pill">BMR: ${stats.bmr}</span> <span class="stat-pill">TDEE: ${stats.tdee}</span> <span class="stat-pill">BMI: ${stats.bmi}</span>`;
+
+    const bju = calcBJU(profile.data);
+    document.getElementById("bjuStats").innerHTML =
+      `<span class="stat-pill">Белки: ${bju.protein} г</span>
+       <span class="stat-pill">Жиры: ${bju.fat} г</span>
+       <span class="stat-pill">Углеводы: ${bju.carbs} г</span>`;
   }
   function addTo(arr, input) {
     const value = input.value.trim().toLowerCase();

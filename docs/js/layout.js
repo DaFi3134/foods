@@ -11,34 +11,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function profileMenuHtml() {
-    const hasProfile = hasSavedProfile();
+    const hasProfile = Boolean(localStorage.getItem("cf_profile"));
 
     if (!hasProfile) {
-      // Профиль не создан — кнопка "Создать профиль"
+      // Профиль не создан — показываем кнопку "Создать профиль"
       return `<a class="btn btn-outline-primary btn-sm ms-lg-3" href="profile.html" id="profileCreateBtn">Создать профиль</a>`;
     }
 
-    // Профиль создан — дропдаун с пунктами
+    // Профиль создан — аватар ведёт прямо на профиль
     const profile = getProfile();
     const data = profile.data || {};
     const avatarText = data.weight ? `${escapeHtml(data.weight)}` : `<i class="bi bi-person-fill"></i>`;
-    const subtitle = data.weight ? `${escapeHtml(data.weight)} кг · ${escapeHtml(data.height || "—")} см` : "Персонализация";
 
     return `
-      <div class="ms-lg-3 profile-dropdown position-relative">
-        <a class="d-flex align-items-center text-decoration-none profile-menu-link"
-           href="#" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
-          <div class="avatar-circle me-2">${avatarText}</div>
-          <div class="d-none d-md-block text-start">
-            <div class="fw-semibold text-dark">Профиль</div>
-            <div class="small text-muted">${subtitle}</div>
-          </div>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-start shadow-sm" aria-labelledby="profileMenu">
-          <li><a class="dropdown-item" href="profile.html#data">Мои данные</a></li>
-          <li><button class="dropdown-item text-danger" type="button" id="clearProfileFromMenu">Очистить профиль</button></li>
-        </ul>
-      </div>`;
+      <a class="d-flex align-items-center text-decoration-none profile-menu-link ms-lg-3"
+         href="profile.html" id="profileLink">
+        <div class="avatar-circle me-2">${avatarText}</div>
+      </a>`;
   }
 
   function renderHeader() {

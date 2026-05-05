@@ -1307,5 +1307,16 @@
     "serving": 100.0,
     "emoji": "⚠️",
     "category": "Мясо и птица"
-  }
+  },
+  {
+  "id": "120",
+  "name": "Хлеб Кёльн",
+  "calories": "310",
+  "protein": "12",
+  "fat": "8.5",
+  "carbs": "47",
+  "serving": "100.0",
+  "emoji": "⚠️",
+  "category": "Другое"
+}
 ]

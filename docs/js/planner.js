@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const dishes = await loadJson(DATA_PATHS.dishes);
+  const dishes = window.CFContent ? await window.CFContent.loadDishes() : await loadJson(DATA_PATHS.dishes);
   const form = document.getElementById("plannerForm");
   const output = document.getElementById("planOutput");
   const restrictionsBox = document.getElementById("plannerRestrictions");

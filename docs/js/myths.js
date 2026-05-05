@@ -1,6 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const myths = await loadJson(DATA_PATHS.myths);
+  const myths = window.CFContent ? await window.CFContent.loadMyths() : await loadJson(DATA_PATHS.myths);
   const list = document.getElementById("mythsList");
   list.innerHTML = myths.length ? myths.map(a => `<div class="col-md-6"><div class="card article-card soft-shadow h-100 p-3">
     <img src="${escapeHtml(a.img || "img/myth1.jpg")}" alt="${escapeHtml(a.title)}">

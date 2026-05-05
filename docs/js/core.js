@@ -5,8 +5,6 @@ let DATA_PATHS = {
   myths: "data/myths.json"
 };
 
-// Замени на ссылку своего репозитория, например: https://github.com/Zver/Correctly-foods
-const GITHUB_REPO_URL = "https://github.com/DaFi3134/foods";
 const mealLabels = {
   breakfast: "Завтрак",
   snack: "Перекус",
@@ -47,9 +45,24 @@ function profileDefault() {
   };
 }
 
+function cleanProfileList(value) {
+  return Array.isArray(value)
+    ? value.map(item => String(item || "").trim()).filter(Boolean)
+    : [];
+}
+
 function getProfile() {
   try {
-    return { ...profileDefault(), ...(JSON.parse(localStorage.getItem("cf_profile")) || {}) };
+    const saved = JSON.parse(localStorage.getItem("cf_profile")) || {};
+    const defaults = profileDefault();
+    return {
+      data: { ...defaults.data, ...(saved.data || {}) },
+      prefs: {
+        liked: cleanProfileList(saved.prefs?.liked || defaults.prefs.liked),
+        disliked: cleanProfileList(saved.prefs?.disliked || defaults.prefs.disliked)
+      },
+      allergies: cleanProfileList(saved.allergies || defaults.allergies)
+    };
   } catch (e) {
     return profileDefault();
   }
@@ -154,17 +167,4 @@ function findDishById(dishes, id) {
 
 function mealTypeText(types = []) {
   return types.map(t => mealLabels[t] || t).join(", ") || "Любой приём";
-}
-
-function createIssueUrl(kind, fields) {
-  const base = GITHUB_REPO_URL.replace(/\/$/, "") + "/issues/new";
-  const title = kind === "dish" ? `[Рецепт]: ${fields.title || ""}` : `[Миф/статья]: ${fields.title || ""}`;
-  const bodyLines = [];
-  Object.entries(fields).forEach(([key, value]) => {
-    bodyLines.push(`### ${key}`);
-    bodyLines.push(String(value || "—"));
-    bodyLines.push("");
-  });
-  const params = new URLSearchParams({ title, body: bodyLines.join("\n"), labels: kind === "dish" ? "recipe-submission,needs-moderation" : "myth-submission,needs-moderation" });
-  return `${base}?${params.toString()}`;
 }

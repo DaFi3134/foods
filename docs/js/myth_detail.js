@@ -1,6 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const myths = await loadJson(DATA_PATHS.myths);
+  const myths = window.CFContent ? await window.CFContent.loadMyths() : await loadJson(DATA_PATHS.myths);
   const id = getQueryParam("id");
   const article = myths.find(a => String(a.id) === String(id)) || myths[0];
   const box = document.getElementById("mythDetail");

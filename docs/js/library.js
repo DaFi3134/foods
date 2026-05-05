@@ -1,6 +1,8 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const [products, dishes] = await Promise.all([loadJson(DATA_PATHS.products), loadJson(DATA_PATHS.dishes)]);
+  const [products, dishes] = window.CFContent
+    ? await Promise.all([window.CFContent.loadProducts(), window.CFContent.loadDishes()])
+    : await Promise.all([loadJson(DATA_PATHS.products), loadJson(DATA_PATHS.dishes)]);
   const q = document.getElementById("searchInput");
   const show = document.getElementById("showSelect");
   const meal = document.getElementById("mealSelect");

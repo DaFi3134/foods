@@ -1,6 +1,8 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const [products, dishes] = await Promise.all([loadJson(DATA_PATHS.products), loadJson(DATA_PATHS.dishes)]);
+  const [products, dishes] = window.CFContent
+    ? await Promise.all([window.CFContent.loadProducts(), window.CFContent.loadDishes()])
+    : await Promise.all([loadJson(DATA_PATHS.products), loadJson(DATA_PATHS.dishes)]);
   const id = getQueryParam("id");
   const dish = findDishById(dishes, id) || dishes[0];
   const box = document.getElementById("dishDetail");

@@ -1,6 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const products = await loadJson(DATA_PATHS.products);
+  const products = window.CFContent ? await window.CFContent.loadProducts() : await loadJson(DATA_PATHS.products);
   const q = document.getElementById("productSearch");
   const cat = document.getElementById("categorySelect");
   const body = document.querySelector("#productsTable tbody");

@@ -19,13 +19,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return `
       <div class="dropdown ms-lg-3 profile-dropdown">
-        <a class="d-flex align-items-center text-decoration-none profile-menu-link" href="profile.html" id="profileMenu">
-          <div class="avatar-circle me-2">${avatarText}</div>
-          <div class="d-none d-md-block text-start">
-            <div class="fw-semibold text-dark">Профиль</div>
-            <div class="small text-muted">${subtitle}</div>
-          </div>
-        </a>
+        <a class="d-flex align-items-center text-decoration-none profile-menu-link"
+         href="profile.html"   <!-- вместо href="#" -->
+         id="profileMenu">
+        <div class="avatar-circle me-2">${avatarText}</div>
+        <div class="d-none d-md-block text-start">
+          <div class="fw-semibold text-dark">Профиль</div>
+          <div class="small text-muted">${subtitle}</div>
+        </div>
+      </a>
         <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="profileMenu">
           <li><a class="dropdown-item" href="profile.html#data">Мои данные</a></li>
           <li><button class="dropdown-item text-danger" type="button" id="clearProfileFromMenu">Очистить профиль</button></li>

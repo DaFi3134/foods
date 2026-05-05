@@ -72,6 +72,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         ${fieldsTable(fields)}
 
+        <div class="admin-card-status submission-status mt-2"></div>
+
         <details class="admin-edit-box mt-3">
           <summary>Редактировать данные перед публикацией</summary>
           <textarea class="form-control admin-json-editor mt-3" rows="10">${json}</textarea>
@@ -79,7 +81,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             <button class="btn btn-sm btn-primary" data-action="save"><i class="bi bi-save"></i> Сохранить правки</button>
             <button class="btn btn-sm btn-outline-secondary" data-action="copy"><i class="bi bi-clipboard"></i> Скопировать JSON</button>
           </div>
-          <div class="admin-card-status submission-status mt-2"></div>
         </details>
       </article>`;
     }).join("");
@@ -104,11 +105,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function updateStatus(card, status) {
     const id = card.dataset.id;
+    const buttons = card.querySelectorAll("button[data-action]");
+    buttons.forEach(button => button.disabled = true);
+    setCardStatus(card, "info", status === "approved" ? "Одобряем..." : "Отклоняем...");
+
     try {
       await window.CFContent.updateSubmission(id, { status });
+      setCardStatus(card, "success", status === "approved" ? "Заявка одобрена." : "Заявка отклонена.");
       await loadRows();
     } catch (error) {
-      setCardStatus(card, "error", error.message || "Не удалось изменить статус.");
+      setCardStatus(card, "error", error.message || "Не удалось изменить статус. Проверь RLS-политику UPDATE в Supabase.");
+      buttons.forEach(button => button.disabled = false);
     }
   }
 

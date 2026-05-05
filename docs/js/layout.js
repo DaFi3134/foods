@@ -27,8 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </a>
         <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="profileMenu">
           <li><a class="dropdown-item" href="profile.html#data">Мои данные</a></li>
-          <li><a class="dropdown-item" href="profile.html#prefs">Мои пожелания по еде</a></li>
-          <li><a class="dropdown-item" href="profile.html#allergies">Мои аллергии / противопоказания</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><button class="dropdown-item text-danger" type="button" id="clearProfileFromMenu">Очистить профиль</button></li>
         </ul>

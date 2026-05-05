@@ -14,7 +14,38 @@
 <header id="site-header"></header>
 <main class="py-4"><div class="container">
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"><div><h1 class="page-title mb-1">Мифы и факты</h1><p class="small-muted mb-0">Статьи, которые прошли модерацию.</p></div><a class="btn btn-primary" href="submit_myth.html">Добавить миф/статью</a></div>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h1 class="page-title mb-1">Мифы и факты</h1>
+    <p class="small-muted mb-0">Мифы, факты, советы и статьи, которые прошли модерацию.</p>
+  </div>
+  <a class="btn btn-primary" href="submit_myth.html">Добавить миф/статью</a>
+</div>
+
+<div class="form-section mb-4">
+  <div class="row g-2 align-items-center">
+    <div class="col-lg-6">
+      <input id="mythsSearchInput" class="form-control" placeholder="Поиск по заголовку, теме или тексту">
+    </div>
+    <div class="col-lg-3">
+      <select id="mythsFormatSelect" class="form-select">
+        <option value="">Все форматы</option>
+        <option value="myth">Миф</option>
+        <option value="fact">Факт</option>
+        <option value="article">Статья</option>
+        <option value="tip">Совет</option>
+        <option value="review">Разбор продукта</option>
+        <option value="other">Иное</option>
+      </select>
+    </div>
+    <div class="col-lg-3">
+      <select id="mythsTopicSelect" class="form-select">
+        <option value="">Любая тема</option>
+      </select>
+    </div>
+  </div>
+</div>
+
 <div class="row g-4" id="mythsList"></div>
 </div></main>
 <footer id="site-footer"></footer>

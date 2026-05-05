@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const header = document.getElementById("site-header");
   if (!header) return;
 
-  // Текущая страница
+  // Определяем текущую страницу
   let current = window.location.pathname.split("/").pop();
   if (current === "") current = "index.html";
 
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return `<a class="btn btn-outline-primary btn-sm ms-lg-3" href="profile.html" id="profileCreateBtn">Создать профиль</a>`;
     }
 
-    // Профиль создан — дропдаун с пунктами под аватаром
+    // Профиль создан — дропдаун с пунктами
     const profile = getProfile();
     const data = profile.data || {};
     const avatarText = data.weight ? `${escapeHtml(data.weight)}` : `<i class="bi bi-person-fill"></i>`;
@@ -87,6 +87,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   renderHeader();
+
+  // Обработка клика по аватару на главной странице
+  document.addEventListener("click", (e) => {
+    const profileLink = document.getElementById("profileMenu");
+    if (!profileLink) return;
+
+    // Клик по аватару на главной странице
+    if (e.target.closest("#profileMenu") && window.location.pathname.endsWith("index.html")) {
+      window.location.href = "profile.html";
+    }
+  });
 
   // Footer
   const footer = document.getElementById("site-footer");

@@ -1,8 +1,8 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const [products, dishes] = window.CFContent
-    ? await Promise.all([window.CFContent.loadProducts(), window.CFContent.loadDishes()])
-    : await Promise.all([loadJson(DATA_PATHS.products), loadJson(DATA_PATHS.dishes)]);
+  let products = [];
+  let dishes = [];
+
   const q = document.getElementById("searchInput");
   const show = document.getElementById("showSelect");
   const meal = document.getElementById("mealSelect");
@@ -38,21 +38,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     const query = q.value.trim().toLowerCase();
     const showVal = show.value;
     const mealVal = meal.value;
-    let filteredDishes = dishes.filter(d => {
+    const filteredDishes = dishes.filter(d => {
       const text = [d.name, ...(d.tags || []), mealTypeText(d.meal_types)].join(" ").toLowerCase();
       const mealOk = !mealVal || (d.meal_types || []).includes(mealVal);
       return (!query || text.includes(query)) && mealOk;
     });
-    let filteredProducts = products.filter(p => {
+    const filteredProducts = products.filter(p => {
       const text = [p.name, p.category].join(" ").toLowerCase();
       return !query || text.includes(query);
     });
 
-    dishesBox.innerHTML = (showVal === "products") ? "" : (filteredDishes.length ? filteredDishes.map(dishCard).join("") : `<div class="empty-state">Блюда не найдены. Можно добавить свой рецепт через форму на модерацию.</div>`);
+    dishesBox.innerHTML = (showVal === "products") ? "" : (filteredDishes.length ? filteredDishes.map(dishCard).join("") : `<div class="empty-state">Блюда не найдены.</div>`);
     productsBox.innerHTML = (showVal === "dishes") ? "" : (filteredProducts.length ? filteredProducts.slice(0, 60).map(productCard).join("") : `<div class="empty-state">Продукты не найдены.</div>`);
     document.getElementById("dishesTitle").style.display = showVal === "products" ? "none" : "block";
     document.getElementById("productsTitle").style.display = showVal === "dishes" ? "none" : "block";
   }
+
+  async function loadLocalFirst() {
+    try {
+      [products, dishes] = await Promise.all([loadJson(DATA_PATHS.products), loadJson(DATA_PATHS.dishes)]);
+      render();
+    } catch (error) {
+      dishesBox.innerHTML = `<div class="empty-state">Не удалось загрузить локальные рецепты. Проверь файлы data/dishes.json и data/products.json.</div>`;
+      productsBox.innerHTML = "";
+      console.error(error);
+      return;
+    }
+
+    if (!window.CFContent || !window.CFContent.isConfigured()) return;
+
+    try {
+      const [remoteProducts, remoteDishes] = await Promise.all([window.CFContent.loadProducts(), window.CFContent.loadDishes()]);
+      products = remoteProducts;
+      dishes = remoteDishes;
+      render();
+    } catch (error) {
+      console.warn("Supabase-материалы не догрузились, показываем локальную библиотеку:", error);
+    }
+  }
+
   [q, show, meal].forEach(el => el.addEventListener("input", render));
   render();
+  await loadLocalFirst();
 });

@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="small text-muted">${subtitle}</div>
           </div>
         </a>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="profileMenu">
+        <ul class="dropdown-menu dropdown-menu-start shadow-sm" aria-labelledby="profileMenu">
           <li><a class="dropdown-item" href="profile.html#data">Мои данные</a></li>
           <li><button class="dropdown-item text-danger" type="button" id="clearProfileFromMenu">Очистить профиль</button></li>
         </ul>

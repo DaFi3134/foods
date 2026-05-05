@@ -155,13 +155,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     setupNotice.classList.add("d-none");
     const session = await window.CFContent.getSession();
-    if (session) {
+    const userEmail = session?.user?.email || "";
+
+    if (session && window.CFContent.isAdminEmail(userEmail)) {
       authBox.classList.add("d-none");
       panel.classList.remove("d-none");
+      setLoginStatus("", "");
       await loadRows();
-    } else {
-      authBox.classList.remove("d-none");
-      panel.classList.add("d-none");
+      return;
+    }
+
+    panel.classList.add("d-none");
+    authBox.classList.remove("d-none");
+
+    if (session && !window.CFContent.isAdminEmail(userEmail)) {
+      setLoginStatus("error", `Этот аккаунт не является админом: ${userEmail || "email не найден"}.`);
+      await window.CFContent.signOut();
     }
   }
 

@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="planner-empty-illustration"><i class="bi bi-basket"></i></div>
         <h3>Нет подходящего блюда</h3>
         <p>${hasStrictRestrictions ? "Все блюда для этого приёма попали под аллергию или список «избегать»." : "В базе пока не хватает блюд для этого приёма пищи."}</p>
-        <a href="submit_recipe.html" class="btn btn-sm btn-outline-primary mt-auto">Добавить рецепт</a>
+        <a href="library.html" class="btn btn-sm btn-outline-primary mt-auto">Открыть библиотеку</a>
       </article>
     </div>`;
   }

@@ -335,6 +335,23 @@
     return data?.session || null;
   }
 
+  function normalizeEmail(email) {
+    return String(email || "").trim().toLowerCase();
+  }
+
+  function isAdminEmail(email) {
+    const adminEmail = normalizeEmail(config().adminEmail);
+    return Boolean(adminEmail && adminEmail !== "your-email@example.com" && normalizeEmail(email) === adminEmail);
+  }
+
+  async function getCurrentUser() {
+    const supabaseClient = getClient();
+    if (!supabaseClient) return null;
+    const { data, error } = await supabaseClient.auth.getUser();
+    if (error) return null;
+    return data?.user || null;
+  }
+
   window.CFContent = {
     isConfigured,
     getClient,
@@ -350,6 +367,8 @@
     updateSubmission,
     signIn,
     signOut,
-    getSession
+    getSession,
+    getCurrentUser,
+    isAdminEmail
   };
 })();

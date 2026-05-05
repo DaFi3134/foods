@@ -44,9 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ["calc.html", "Калькулятор"],
       ["check_intake.html", "Проверка рациона"],
       ["planner.html", "Планировщик"],
-      ["products.html", "Продукты"],
-      ["submit.html", "Предложить"],
-      ["admin.html", "Админка"]
+      ["products.html", "Продукты"]
     ];
 
     header.innerHTML = `
@@ -105,11 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <div>© healthy food — Питание для яркой жизни</div>
           <div>
             <a href="guide.html">Гид</a> · 
-            <a href="submit.html">Предложить материал</a> · 
-            <a href="submit_recipe.html">Рецепт</a> · 
-            <a href="submit_product.html">Продукт</a> · 
-            <a href="submit_article.html">Статья</a> · 
-            <a href="admin.html">Админка</a>
+            <a href="library.html">Библиотека</a> · 
+            <a href="products.html">Продукты</a>
           </div>
         </div>
       </footer>`;

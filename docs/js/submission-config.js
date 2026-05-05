@@ -6,7 +6,7 @@
 window.SUPABASE_CONFIG = {
   url: "https://qygayinuchdngerceupt.supabase.co",
   anonKey: "sb_publishable_7S_qFgU6NZXyMvOA1RV4Tg_12ZyM4Dq",
-  adminEmail: "your-email@example.com"
+  adminEmail: "i.klimka694@gmail.com"
 };
 
 window.SUBMISSION_CONFIG = {

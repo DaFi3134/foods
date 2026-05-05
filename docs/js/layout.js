@@ -14,19 +14,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const hasProfile = Boolean(localStorage.getItem("cf_profile"));
 
     if (!hasProfile) {
-      // Профиль не создан — показываем кнопку "Создать профиль"
+      // Профиль не создан — кнопка "Создать профиль"
       return `<a class="btn btn-outline-primary btn-sm ms-lg-3" href="profile.html" id="profileCreateBtn">Создать профиль</a>`;
     }
 
-    // Профиль создан — аватар ведёт прямо на профиль
+    // Профиль создан — аватар ведёт прямо на профиль, с подписью веса и роста
     const profile = getProfile();
     const data = profile.data || {};
     const avatarText = data.weight ? `${escapeHtml(data.weight)}` : `<i class="bi bi-person-fill"></i>`;
+    const subtitle = data.weight ? `${escapeHtml(data.weight)} кг · ${escapeHtml(data.height || "—")} см` : "Персонализация";
 
     return `
       <a class="d-flex align-items-center text-decoration-none profile-menu-link ms-lg-3"
          href="profile.html" id="profileLink">
         <div class="avatar-circle me-2">${avatarText}</div>
+        <div class="d-none d-md-block text-start">
+          <div class="fw-semibold text-dark">Профиль</div>
+          <div class="small text-muted">${subtitle}</div>
+        </div>
       </a>`;
   }
 

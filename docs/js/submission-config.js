@@ -5,7 +5,7 @@
  */
 window.SUPABASE_CONFIG = Object.freeze({
   url: "https://qekkfmsiwocrxbwyuwsa.supabase.co",
-  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFla2tmbXNpd29jcnhid3l1d3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwODk0MzEsImV4cCI6MjEwNDY2NTQzMX0.IdoeUvLpD1AC2FcItSb5tZqNWUwdaYAwYpEgGCf4MVk",
+  anonKey: "sb_publishable_sxSTaCsbI6tSBdaDfSn-Nw_WPDkLS5Z",
   aiFunction: "ai-assistant",
   submissionFunction: "submit-content"
 });

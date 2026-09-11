@@ -1,5 +1,8 @@
 (function () {
-  const PLACEHOLDER_RE = /(YOUR_PROJECT_ID|YOUR_SUPABASE_ANON_KEY|your-email@example\.com)/i;
+  "use strict";
+
+  const PLACEHOLDER_RE = /(YOUR_SUPABASE_URL|YOUR_PROJECT_ID|YOUR_SUPABASE_PUBLISHABLE_KEY|YOUR_SUPABASE_ANON_KEY)/i;
+  const REQUEST_TIMEOUT_MS = 5000;
   let client = null;
   let approvedCache = null;
 
@@ -9,16 +12,29 @@
 
   function isConfigured() {
     const cfg = config();
-    return Boolean(cfg.url && cfg.anonKey && !PLACEHOLDER_RE.test(`${cfg.url} ${cfg.anonKey}`));
+    return Boolean(
+      cfg.url &&
+      cfg.anonKey &&
+      /^https:\/\//i.test(cfg.url) &&
+      !PLACEHOLDER_RE.test(`${cfg.url} ${cfg.anonKey}`)
+    );
   }
 
   function getClient() {
     if (!isConfigured()) return null;
-    if (!window.supabase || !window.supabase.createClient) {
-      console.warn("Supabase CDN не загружен. Проверь подключение @supabase/supabase-js на странице.");
+    if (!window.supabase?.createClient) {
+      console.warn("Supabase SDK не загружен.");
       return null;
     }
-    if (!client) client = window.supabase.createClient(config().url, config().anonKey);
+    if (!client) {
+      client = window.supabase.createClient(config().url, config().anonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+    }
     return client;
   }
 
@@ -41,27 +57,25 @@
   }
 
   function fieldsFromPayload(payload) {
-    if (!payload) return {};
-    if (payload.fields && typeof payload.fields === "object") return payload.fields;
-    return payload;
+    if (!payload || typeof payload !== "object") return {};
+    return payload.fields && typeof payload.fields === "object" ? payload.fields : payload;
   }
 
   function field(fields, names, fallback = "") {
     for (const name of names) {
-      const value = fields[name];
+      const value = fields?.[name];
       if (Array.isArray(value) && value.length) return value.join(", ");
-      if (value !== undefined && value !== null && String(value).trim() !== "") return String(value).trim();
+      if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
     }
     return fallback;
   }
 
   function numberField(fields, names, fallback = 0) {
     const raw = field(fields, names, "");
-    if (!raw) return fallback;
     const match = String(raw).replace(",", ".").match(/-?\d+(?:\.\d+)?/);
     if (!match) return fallback;
-    const number = Number(match[0]);
-    return Number.isFinite(number) ? number : fallback;
+    const value = Number(match[0]);
+    return Number.isFinite(value) ? value : fallback;
   }
 
   function splitLines(value) {
@@ -72,37 +86,8 @@
   }
 
   function splitTags(value) {
-    const values = Array.isArray(value) ? value : String(value || "").split(/[,;\n]/);
-    return values.map(item => String(item || "").trim()).filter(Boolean);
-  }
-
-  function slugify(value) {
-    const base = normalize(value)
-      .replace(/[^a-zа-я0-9]+/gi, "-")
-      .replace(/^-+|-+$/g, "");
-    return base || `item-${Date.now()}`;
-  }
-
-  function categoryEmoji(name, category) {
-    const text = normalize(`${name} ${category}`);
-    const pairs = [
-      ["йогурт", "🥣"], ["кефир", "🥛"], ["молоко", "🥛"], ["творог", "🥣"], ["сыр", "🧀"],
-      ["яблок", "🍏"], ["банан", "🍌"], ["апельсин", "🍊"], ["лимон", "🍋"], ["клубник", "🍓"], ["виноград", "🍇"], ["ананас", "🍍"], ["арбуз", "🍉"], ["авокадо", "🥑"],
-      ["огур", "🥒"], ["томат", "🍅"], ["помид", "🍅"], ["морков", "🥕"], ["карто", "🥔"], ["лук", "🧅"], ["чеснок", "🧄"], ["брокколи", "🥦"], ["капуст", "🥬"], ["перец", "🫑"], ["фасол", "🫘"], ["гриб", "🍄"],
-      ["куриц", "🍗"], ["индей", "🦃"], ["говя", "🥩"], ["свин", "🥩"], ["ветчин", "🥓"], ["колбас", "🌭"], ["сосиск", "🌭"],
-      ["рыб", "🐟"], ["лосос", "🐟"], ["форел", "🐟"], ["кревет", "🦐"], ["морепр", "🦐"],
-      ["греч", "🌾"], ["овся", "🥣"], ["хлоп", "🥣"], ["макарон", "🍝"], ["хлеб", "🍞"],
-      ["чай", "🍵"], ["кофе", "☕"], ["cola", "🥤"], ["кола", "🥤"], ["напит", "🥤"],
-      ["яйц", "🥚"], ["печень", "🍪"], ["какао", "🍫"]
-    ];
-    const found = pairs.find(([needle]) => text.includes(needle));
-    if (found) return found[1];
-    if (text.includes("молоч")) return "🥛";
-    if (text.includes("фрукт") || text.includes("ягод")) return "🍎";
-    if (text.includes("овощ")) return "🥬";
-    if (text.includes("мяс")) return "🥩";
-    if (text.includes("рыб") || text.includes("мор")) return "🐟";
-    return "🍽️";
+    const source = Array.isArray(value) ? value : String(value || "").split(/[,;\n]/);
+    return source.map(item => String(item || "").trim()).filter(Boolean);
   }
 
   function parseIngredients(value) {
@@ -117,19 +102,21 @@
   }
 
   function parseInstructions(value) {
-    return splitLines(value).map(line => line.replace(/^\d+[.)]\s*/, "").trim()).filter(Boolean);
+    return splitLines(value)
+      .map(line => line.replace(/^\d+[.)]\s*/, "").trim())
+      .filter(Boolean);
   }
 
-  function parseMealTypes(value, category) {
-    const raw = Array.isArray(value) ? value : splitTags(value || category);
+  function parseMealTypes(value, category = "") {
+    const source = Array.isArray(value) ? value : splitTags(value || category);
     const result = [];
-    raw.forEach(item => {
+    for (const item of source) {
       const text = normalize(item);
       if (text.includes("завтрак")) result.push("breakfast");
       if (text.includes("обед")) result.push("lunch");
       if (text.includes("ужин")) result.push("dinner");
       if (text.includes("перекус")) result.push("snack");
-    });
+    }
     return [...new Set(result.length ? result : ["other"])];
   }
 
@@ -139,6 +126,20 @@
     return field(fields, ["Заголовок", "Название", "title"], "Новый материал");
   }
 
+  function categoryEmoji(name, category) {
+    const text = normalize(`${name} ${category}`);
+    const rules = [
+      ["йогурт", "🥣"], ["молок", "🥛"], ["творог", "🥣"], ["сыр", "🧀"],
+      ["яблок", "🍏"], ["банан", "🍌"], ["клубник", "🍓"], ["авокад", "🥑"],
+      ["огур", "🥒"], ["томат", "🍅"], ["помид", "🍅"], ["морков", "🥕"],
+      ["куриц", "🍗"], ["индей", "🦃"], ["говя", "🥩"], ["рыб", "🐟"],
+      ["кревет", "🦐"], ["греч", "🌾"], ["овся", "🥣"], ["макарон", "🍝"],
+      ["яйц", "🥚"], ["кофе", "☕"], ["чай", "🍵"]
+    ];
+    const match = rules.find(([needle]) => text.includes(needle));
+    return match?.[1] || "🍽️";
+  }
+
   function productFromSubmission(row) {
     const fields = fieldsFromPayload(row.payload);
     const name = titleFromFields("product", fields);
@@ -146,10 +147,10 @@
     return {
       id: `approved-product-${row.id}`,
       name,
-      calories: numberField(fields, ["Ккал на 100 г", "calories"], 0),
-      protein: numberField(fields, ["Белки на 100 г", "protein"], 0),
-      fat: numberField(fields, ["Жиры на 100 г", "fat"], 0),
-      carbs: numberField(fields, ["Углеводы на 100 г", "carbs"], 0),
+      calories: numberField(fields, ["Ккал на 100 г", "Калорийность", "calories"], 0),
+      protein: numberField(fields, ["Белки на 100 г", "Белки", "protein"], 0),
+      fat: numberField(fields, ["Жиры на 100 г", "Жиры", "fat"], 0),
+      carbs: numberField(fields, ["Углеводы на 100 г", "Углеводы", "carbs"], 0),
       serving: 100,
       glycemic_index: numberField(fields, ["Гликемический индекс", "glycemic_index"], 0),
       emoji: field(fields, ["Эмодзи", "emoji"], categoryEmoji(name, category)),
@@ -163,20 +164,17 @@
     const fields = fieldsFromPayload(row.payload);
     const name = titleFromFields("recipe", fields);
     const category = field(fields, ["Категория", "category"], "Рецепт");
-    const mealTypes = parseMealTypes(fields["Подходит для"], category);
-    const ingredients = parseIngredients(field(fields, ["Ингредиенты", "ingredients"], ""));
-    const instructions = parseInstructions(field(fields, ["Приготовление", "instructions"], ""));
-    const mealLabelMap = { breakfast: "Завтрак", snack: "Перекус", lunch: "Обед", dinner: "Ужин", other: "Другое" };
-    const tags = [...new Set([category, ...mealTypes.map(type => mealLabelMap[type] || type)].filter(Boolean))];
+    const mealTypes = parseMealTypes(fields["Подходит для"] || fields.meal_types, category);
+    const labelMap = { breakfast: "Завтрак", snack: "Перекус", lunch: "Обед", dinner: "Ужин", other: "Другое" };
     return {
       id: `approved-recipe-${row.id}`,
       name,
       meal_types: mealTypes,
       image: field(fields, ["Ссылка на фото", "Ссылка на изображение", "image"], "img/hero.jpg"),
-      ingredients,
-      instructions,
+      ingredients: parseIngredients(field(fields, ["Ингредиенты", "ingredients"], "")),
+      instructions: parseInstructions(field(fields, ["Приготовление", "instructions"], "")),
       author: field(fields, ["Автор", "author"], "Пользователь сайта"),
-      tags,
+      tags: [...new Set([category, ...mealTypes.map(type => labelMap[type] || type)].filter(Boolean))],
       calories: numberField(fields, ["Калорийность", "calories"], 0),
       protein: numberField(fields, ["Белки", "protein"], 0),
       fat: numberField(fields, ["Жиры", "fat"], 0),
@@ -188,13 +186,11 @@
 
   function articleFromSubmission(row) {
     const fields = fieldsFromPayload(row.payload);
-    const title = titleFromFields("article", fields);
     const image = field(fields, ["Ссылка на изображение", "Ссылка на фото", "image"], "img/myth1.jpg");
-    const sources = splitLines(field(fields, ["Источники", "sources"], ""));
     const content = field(fields, ["Полный текст", "Короткая суть", "content"], "");
     return {
       id: `approved-article-${row.id}`,
-      title,
+      title: titleFromFields("article", fields),
       content,
       author: field(fields, ["Автор", "author"], "Пользователь сайта"),
       author_name: field(fields, ["Автор", "author"], "Пользователь сайта"),
@@ -206,7 +202,7 @@
       full_text: content,
       format: field(fields, ["Формат", "format"], normalizeType(row.type) === "myth" ? "Миф" : "Статья"),
       category: field(fields, ["Тема", "Категория", "category"], "Питание"),
-      sources,
+      sources: splitLines(field(fields, ["Источники", "sources"], "")),
       proofs: splitTags(fields["Нужно проверить"] || []),
       source: "supabase",
       submission_id: row.id
@@ -215,108 +211,145 @@
 
   function mergeById(localItems, remoteItems) {
     const seen = new Set();
-    return [...remoteItems, ...localItems].filter(item => {
-      const key = String(item.id ?? item.name ?? item.title);
-      if (seen.has(key)) return false;
+    return [...(remoteItems || []), ...(localItems || [])].filter(item => {
+      const key = String(item?.id ?? item?.name ?? item?.title ?? "");
+      if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     });
   }
 
+  function timeout(promise, fallback, ms = REQUEST_TIMEOUT_MS) {
+    return Promise.race([
+      promise,
+      new Promise(resolve => setTimeout(() => resolve(fallback), ms))
+    ]);
+  }
+
   async function fetchApprovedSubmissions(force = false) {
     if (approvedCache && !force) return approvedCache;
     const supabaseClient = getClient();
-    if (!supabaseClient) {
-      approvedCache = [];
-      return approvedCache;
-    }
+    if (!supabaseClient) return [];
 
-    const { data, error } = await supabaseClient
-      .from("submissions")
-      .select("id,type,title,payload,status,created_at,updated_at,author_name,author_email")
-      .eq("status", "approved")
+    const query = supabaseClient
+      .from("approved_submissions")
+      .select("id,type,title,payload,status,created_at,updated_at,author_name")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.warn("Не удалось загрузить одобренные материалы из Supabase:", error.message);
+    const result = await timeout(query, { data: [], error: new Error("Supabase timeout") });
+    if (result.error) {
+      console.warn("Supabase недоступен, используем локальные данные:", result.error.message);
       approvedCache = [];
       return approvedCache;
     }
 
-    approvedCache = data || [];
+    approvedCache = result.data || [];
     return approvedCache;
   }
 
   async function loadProducts() {
     const local = await loadJson(DATA_PATHS.products);
     const approved = await fetchApprovedSubmissions();
-    const products = approved.filter(row => normalizeType(row.type) === "product").map(productFromSubmission);
-    return mergeById(local, products);
+    return mergeById(local, approved.filter(row => normalizeType(row.type) === "product").map(productFromSubmission));
   }
 
   async function loadDishes() {
     const local = await loadJson(DATA_PATHS.dishes);
     const approved = await fetchApprovedSubmissions();
-    const dishes = approved.filter(row => normalizeType(row.type) === "recipe").map(dishFromSubmission);
-    return mergeById(local, dishes);
+    return mergeById(local, approved.filter(row => normalizeType(row.type) === "recipe").map(dishFromSubmission));
   }
 
   async function loadMyths() {
     const local = await loadJson(DATA_PATHS.myths);
     const approved = await fetchApprovedSubmissions();
-    const articles = approved
-      .filter(row => ["article", "myth"].includes(normalizeType(row.type)))
-      .map(articleFromSubmission);
-    return mergeById(local, articles);
+    return mergeById(
+      local,
+      approved.filter(row => ["article", "myth"].includes(normalizeType(row.type))).map(articleFromSubmission)
+    );
   }
 
   async function insertSubmission(submission) {
     const supabaseClient = getClient();
-    if (!supabaseClient) throw new Error("Supabase пока не подключён. Заполни docs/js/submission-config.js.");
-    const { error } = await supabaseClient
-      .from("submissions")
-      .insert(submission);
-    if (error) throw error;
-    return true;
+    if (!supabaseClient) throw new Error("Supabase не подключён.");
+
+    const safeSubmission = {
+      type: normalizeType(submission?.type),
+      title: String(submission?.title || "Без названия").trim().slice(0, 180),
+      author_name: String(submission?.author_name || "").trim().slice(0, 120) || null,
+      payload: submission?.payload && typeof submission.payload === "object" ? submission.payload : {}
+    };
+
+    const functionName = String(config().submissionFunction || "submit-content");
+    const { data, error } = await supabaseClient.functions.invoke(functionName, {
+      body: { submission: safeSubmission }
+    });
+    if (error) {
+      let message = error.message || "Не удалось отправить заявку.";
+      try {
+        const payload = await error.context?.json?.();
+        if (payload?.error) message = payload.error;
+      } catch (_) {}
+      throw new Error(message);
+    }
+    if (!data?.ok) throw new Error(data?.error || "Сервер не подтвердил сохранение заявки.");
+    return data;
   }
 
   async function listSubmissions(status = "all") {
     const supabaseClient = getClient();
-    if (!supabaseClient) throw new Error("Supabase пока не подключён. Заполни docs/js/submission-config.js.");
+    if (!supabaseClient) throw new Error("Supabase не подключён.");
+
     let query = supabaseClient
       .from("submissions")
-      .select("id,type,title,payload,status,created_at,updated_at,author_name,author_email,moderator_note")
+      .select("id,type,title,payload,status,created_at,updated_at,author_name,author_contact,author_email,moderator_note")
       .order("created_at", { ascending: false });
+
     if (status !== "all") query = query.eq("status", status);
     const { data, error } = await query;
     if (error) throw error;
     return data || [];
   }
 
-  async function updateSubmission(id, changes) {
+  async function updateSubmission(id, changes = {}) {
     const supabaseClient = getClient();
-    if (!supabaseClient) throw new Error("Supabase пока не подключён. Заполни docs/js/submission-config.js.");
+    if (!supabaseClient) throw new Error("Supabase не подключён.");
 
-    // Не делаем .select().single() после UPDATE: при RLS это может выглядеть как
-    // "ничего не происходит", если обновление разрешено, а чтение обновлённой строки
-    // ограничено политиками. Для смены статуса достаточно самого UPDATE.
-    const { error, count } = await supabaseClient
+    const allowed = {};
+    if (["pending", "approved", "rejected"].includes(changes.status)) allowed.status = changes.status;
+    if (changes.payload && typeof changes.payload === "object") allowed.payload = changes.payload;
+    if (typeof changes.title === "string") allowed.title = changes.title.trim().slice(0, 180);
+    if (typeof changes.moderator_note === "string") allowed.moderator_note = changes.moderator_note.slice(0, 2000);
+    if (!Object.keys(allowed).length) throw new Error("Нет допустимых изменений.");
+
+    const { data, error } = await supabaseClient
       .from("submissions")
-      .update(changes, { count: "exact" })
-      .eq("id", id);
+      .update(allowed)
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
 
     if (error) throw error;
-    if (count === 0) {
-      throw new Error("Строка не обновилась. Проверь adminEmail в submission-config.js и email в RLS-политике Supabase.");
-    }
+    if (!data) throw new Error("Заявка не обновлена: проверь права администратора и RLS.");
+    approvedCache = null;
+    return true;
+  }
 
+  async function deleteSubmission(id) {
+    const supabaseClient = getClient();
+    if (!supabaseClient) throw new Error("Supabase не подключён.");
+    const { error, count } = await supabaseClient
+      .from("submissions")
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) throw error;
+    if (count === 0) throw new Error("Заявка не удалена: проверь права администратора.");
     approvedCache = null;
     return true;
   }
 
   async function signIn(email, password) {
     const supabaseClient = getClient();
-    if (!supabaseClient) throw new Error("Supabase пока не подключён. Заполни docs/js/submission-config.js.");
+    if (!supabaseClient) throw new Error("Supabase не подключён.");
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
@@ -325,23 +358,16 @@
   async function signOut() {
     const supabaseClient = getClient();
     if (!supabaseClient) return;
-    await supabaseClient.auth.signOut();
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) throw error;
   }
 
   async function getSession() {
     const supabaseClient = getClient();
     if (!supabaseClient) return null;
-    const { data } = await supabaseClient.auth.getSession();
+    const { data, error } = await supabaseClient.auth.getSession();
+    if (error) return null;
     return data?.session || null;
-  }
-
-  function normalizeEmail(email) {
-    return String(email || "").trim().toLowerCase();
-  }
-
-  function isAdminEmail(email) {
-    const adminEmail = normalizeEmail(config().adminEmail);
-    return Boolean(adminEmail && adminEmail !== "your-email@example.com" && normalizeEmail(email) === adminEmail);
   }
 
   async function getCurrentUser() {
@@ -350,6 +376,35 @@
     const { data, error } = await supabaseClient.auth.getUser();
     if (error) return null;
     return data?.user || null;
+  }
+
+  async function isAdmin() {
+    const supabaseClient = getClient();
+    if (!supabaseClient) return false;
+    const session = await getSession();
+    if (!session) return false;
+    const { data, error } = await supabaseClient.rpc("is_site_admin");
+    if (error) {
+      console.warn("Не удалось проверить права администратора:", error.message);
+      return false;
+    }
+    return data === true;
+  }
+
+  async function invokeAi(body) {
+    const supabaseClient = getClient();
+    if (!supabaseClient) throw new Error("Supabase не подключён.");
+    const functionName = String(config().aiFunction || "ai-assistant");
+    const { data, error } = await supabaseClient.functions.invoke(functionName, { body });
+    if (error) {
+      let message = error.message || "AI-функция вернула ошибку.";
+      try {
+        const payload = await error.context?.json?.();
+        if (payload?.error) message = payload.error;
+      } catch (_) {}
+      throw new Error(message);
+    }
+    return data;
   }
 
   window.CFContent = {
@@ -365,10 +420,12 @@
     insertSubmission,
     listSubmissions,
     updateSubmission,
+    deleteSubmission,
     signIn,
     signOut,
     getSession,
     getCurrentUser,
-    isAdminEmail
+    isAdmin,
+    invokeAi
   };
 })();

@@ -1,153 +1,46 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const dishes = window.CFContent ? await window.CFContent.loadDishes() : await loadJson(DATA_PATHS.dishes);
+  "use strict";
+
   const form = document.getElementById("plannerForm");
   const output = document.getElementById("planOutput");
   const restrictionsBox = document.getElementById("plannerRestrictions");
-  const pStats = calcProfileStats(getProfile().data);
-  document.getElementById("calories").value = pStats.tdee || 2000;
+  const caloriesInput = document.getElementById("calories");
+  const mealsInput = document.getElementById("meals");
 
-  const WORD_ALIASES = {
-    "курица": ["курица", "куриное", "куриный", "куриная", "куриной", "курин"],
-    "курицу": ["курица", "куриное", "куриный", "куриная", "куриной", "курин"],
-    "индейка": ["индейка", "индейки", "индееч"],
-    "говядина": ["говядина", "говяж"],
-    "свинина": ["свинина", "свин"],
-    "рыба": ["рыба", "рыб", "лосось", "форель", "горбуша", "сельдь", "скумбрия"],
-    "молоко": ["молоко", "молоч"],
-    "йогурт": ["йогурт"],
-    "творог": ["творог", "творож"],
-    "сыр": ["сыр", "сырник", "сырок"],
-    "овсянка": ["овсянка", "овсяные", "геркулес"],
-    "гречка": ["гречка", "греча", "гречнев"],
-    "помидор": ["помидор", "томат"],
-    "томаты": ["томат", "помидор"],
-    "огурец": ["огурец", "огурцы", "огурц"],
-    "капуста": ["капуста", "капуст"],
-    "орехи": ["орех"],
-    "ягоды": ["ягоды", "ягод", "клубника", "черника", "малина", "вишня"],
-    "морепродукты": ["морепродукты", "морской", "креветка", "креветки", "мидии", "кальмар"]
-  };
-
-  function normalize(value) {
-    return String(value ?? "")
-      .toLowerCase()
-      .replaceAll("ё", "е")
-      .replace(/[^a-zа-я0-9%]+/gi, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+  if (!form || !output || !restrictionsBox) return;
+  if (!window.PlannerEngine) {
+    output.innerHTML = '<div class="alert alert-danger">Не загружен модуль planner-engine.js.</div>';
+    return;
   }
 
-  function listValues(values = []) {
-    return values
-      .flatMap(value => String(value || "").split(/[;,]/))
-      .map(value => value.trim())
-      .filter(Boolean);
+  let dishes = [];
+  let currentPlan = null;
+
+  try {
+    dishes = window.CFContent
+      ? await window.CFContent.loadDishes()
+      : await loadJson(DATA_PATHS.dishes);
+  } catch (error) {
+    output.innerHTML = `<div class="alert alert-danger">${escapeHtml(error.message || "Не удалось загрузить блюда.")}</div>`;
+    return;
   }
 
-  function variantsFor(term) {
-    const norm = normalize(term);
-    if (!norm) return [];
-    const aliases = WORD_ALIASES[norm] || [];
-    const words = norm.split(" ").filter(Boolean);
-    return [...new Set([norm, ...aliases, ...words])].filter(v => v.length >= 2);
-  }
-
-  function dishSearchText(dish) {
-    const ingredients = (dish.ingredients || []).map(item => item.product).join(" ");
-    const tags = (dish.tags || []).join(" ");
-    return normalize(`${dish.name || ""} ${ingredients} ${tags} ${dish.author || ""}`);
-  }
-
-  function termMatchesDish(term, dish, text = dishSearchText(dish)) {
-    const variants = variantsFor(term);
-    if (!variants.length) return false;
-
-    return variants.some(variant => {
-      if (text.includes(variant)) return true;
-      const words = variant.split(" ").filter(Boolean);
-      return words.length > 1 && words.every(word => text.includes(word));
-    });
-  }
-
-  function matchedTerms(dish, terms) {
-    const text = dishSearchText(dish);
-    return listValues(terms).filter(term => termMatchesDish(term, dish, text));
-  }
-
-  function preferenceInfo(dish, profile) {
-    const allergies = matchedTerms(dish, profile.allergies || []);
-    const avoided = matchedTerms(dish, profile.prefs?.disliked || []);
-    const liked = matchedTerms(dish, profile.prefs?.liked || []);
-    return {
-      allergies,
-      avoided,
-      liked,
-      blocked: allergies.length > 0 || avoided.length > 0
-    };
-  }
-
-  function scoreDish(dish, target, profile) {
-    const info = preferenceInfo(dish, profile);
-    if (info.blocked) return Number.POSITIVE_INFINITY;
-
-    let score = Math.abs(Number(dish.calories || 0) - target);
-    const name = normalize(dish.name || "");
-
-    if (info.liked.length) {
-      const exactFavorite = info.liked.some(term => name.includes(normalize(term)));
-      score *= exactFavorite ? 0.45 : 0.65;
-      score -= info.liked.length * 25;
-    }
-
-    return score;
-  }
-
-  function mealSlots(meals) {
-    if (meals === 3) {
-      return [["Завтрак", "breakfast", .30], ["Обед", "lunch", .40], ["Ужин", "dinner", .30]];
-    }
-    if (meals === 4) {
-      return [["Завтрак", "breakfast", .25], ["Перекус", "snack", .10], ["Обед", "lunch", .35], ["Ужин", "dinner", .30]];
-    }
-    if (meals === 5) {
-      return [["Завтрак", "breakfast", .25], ["Перекус 1", "snack", .10], ["Обед", "lunch", .35], ["Перекус 2", "snack", .10], ["Ужин", "dinner", .20]];
-    }
-    return Array.from({ length: meals }, (_, i) => [`Приём ${i + 1}`, null, 1 / meals]);
-  }
-
-  function allowedDishes(pool, profile) {
-    return pool.filter(dish => !preferenceInfo(dish, profile).blocked);
-  }
-
-  function pickBestDish(type, target, profile, used) {
-    const byType = type ? dishes.filter(dish => (dish.meal_types || []).includes(type)) : dishes.slice();
-    const allAllowed = allowedDishes(dishes, profile);
-
-    const pools = [
-      allowedDishes(byType.filter(dish => !used.has(dish.id)), profile),
-      allowedDishes(byType, profile),
-      allowedDishes(dishes.filter(dish => !used.has(dish.id)), profile),
-      allAllowed
-    ].filter(pool => pool.length);
-
-    if (!pools.length) return null;
-
-    return pools[0]
-      .slice()
-      .sort((a, b) => scoreDish(a, target, profile) - scoreDish(b, target, profile))[0];
-  }
+  const profileStats = calcProfileStats(getProfile().data);
+  caloriesInput.value = Math.max(1200, Number(profileStats.tdee || 2000));
 
   function renderChips(items, type = "neutral") {
-    const values = listValues(items);
-    if (!values.length) return `<span class="planner-empty-chip">не указано</span>`;
-    return values.map(item => `<span class="planner-chip planner-chip-${type}">${escapeHtml(item)}</span>`).join(" ");
+    const values = window.PlannerEngine.listValues(items);
+    if (!values.length) return '<span class="planner-empty-chip">не указано</span>';
+    return values
+      .map(item => `<span class="planner-chip planner-chip-${type}">${escapeHtml(item)}</span>`)
+      .join(" ");
   }
 
   function renderRestrictions(profile) {
-    const likedCount = listValues(profile.prefs?.liked).length;
-    const avoidCount = listValues(profile.prefs?.disliked).length;
-    const allergyCount = listValues(profile.allergies).length;
-    const blockedCount = dishes.filter(dish => preferenceInfo(dish, profile).blocked).length;
+    const likedCount = window.PlannerEngine.listValues(profile.prefs?.liked).length;
+    const avoidedCount = window.PlannerEngine.listValues(profile.prefs?.disliked).length;
+    const allergyCount = window.PlannerEngine.listValues(profile.allergies).length;
+    const blockedCount = dishes.filter(dish => window.PlannerEngine.preferenceInfo(dish, profile).blocked).length;
     const availableCount = Math.max(dishes.length - blockedCount, 0);
 
     restrictionsBox.innerHTML = `
@@ -156,13 +49,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           <div>
             <div class="small-muted mb-1">Учитывается из профиля</div>
             <h2>Ограничения и предпочтения</h2>
-            <p>Аллергии и «избегать» строго исключают блюда из плана. Любимые продукты и блюда получают приоритет при выборе.</p>
+            <p>Аллергии и список «избегать» исключают блюда. Любимые продукты получают дополнительный приоритет.</p>
           </div>
-          <a class="btn btn-sm btn-outline-primary planner-profile-link" href="profile.html"><i class="bi bi-pencil-square"></i> Изменить профиль</a>
+          <a class="btn btn-sm btn-outline-primary planner-profile-link" href="profile.html">
+            <i class="bi bi-pencil-square"></i> Изменить профиль
+          </a>
         </div>
         <div class="planner-restrictions-stats">
           <div><span>${likedCount}</span><small>любимых</small></div>
-          <div><span>${avoidCount}</span><small>исключений</small></div>
+          <div><span>${avoidedCount}</span><small>исключений</small></div>
           <div><span>${allergyCount}</span><small>аллергий</small></div>
           <div><span>${availableCount}/${dishes.length}</span><small>доступно блюд</small></div>
         </div>
@@ -174,138 +69,205 @@ document.addEventListener("DOMContentLoaded", async () => {
       </section>`;
   }
 
-  function renderDishNote(dish, profile) {
-    const info = preferenceInfo(dish, profile);
-    if (info.liked.length) {
-      return `<div class="planner-match"><i class="bi bi-heart-fill"></i> Совпало с любимым: ${info.liked.map(escapeHtml).join(", ")}</div>`;
-    }
-    return `<div class="planner-safe"><i class="bi bi-shield-check"></i> Без сохранённых аллергенов и продуктов из «избегать»</div>`;
-  }
-
   function mealIcon(label) {
-    const norm = normalize(label);
-    if (norm.includes("завтрак")) return "☀️";
-    if (norm.includes("перекус")) return "🍏";
-    if (norm.includes("обед")) return "🍽️";
-    if (norm.includes("ужин")) return "🌙";
+    const text = window.PlannerEngine.normalize(label);
+    if (text.includes("завтрак")) return "☀️";
+    if (text.includes("перекус")) return "🍏";
+    if (text.includes("обед")) return "🍽️";
+    if (text.includes("ужин")) return "🌙";
     return "🥗";
   }
 
-  function renderMacroPills(dish) {
+  function renderMacroPills(nutrition) {
+    if (!nutrition) return "";
     return `
       <div class="planner-macros">
-        <span><strong>${fmt(dish.calories, 0)}</strong><small>ккал</small></span>
-        <span><strong>${fmt(dish.protein)}</strong><small>белки</small></span>
-        <span><strong>${fmt(dish.fat)}</strong><small>жиры</small></span>
-        <span><strong>${fmt(dish.carbs)}</strong><small>угл.</small></span>
+        <span><strong>${fmt(nutrition.calories, 0)}</strong><small>ккал</small></span>
+        <span><strong>${fmt(nutrition.protein)}</strong><small>белки</small></span>
+        <span><strong>${fmt(nutrition.fat)}</strong><small>жиры</small></span>
+        <span><strong>${fmt(nutrition.carbs)}</strong><small>угл.</small></span>
       </div>`;
   }
 
-  function renderIngredientsPreview(dish) {
-    const ingredients = (dish.ingredients || [])
+  function renderIngredientsPreview(slot) {
+    const ingredients = (slot.dish?.ingredients || [])
       .slice(0, 3)
-      .map(item => `${escapeHtml(item.product)} ${fmt(item.grams, 0)} г`);
+      .map(item => `${escapeHtml(item.product)} ${fmt(Number(item.grams || 0) * slot.portionFactor, 0)} г`);
     if (!ingredients.length) return "";
-    const more = (dish.ingredients || []).length > 3 ? `<span>+ ещё ${(dish.ingredients || []).length - 3}</span>` : "";
+    const rest = (slot.dish.ingredients || []).length - ingredients.length;
+    const more = rest > 0 ? `<span>+ ещё ${rest}</span>` : "";
     return `<div class="planner-ingredients">${ingredients.map(item => `<span>${item}</span>`).join("")}${more}</div>`;
   }
 
-  function renderNoDish(label, target, profile) {
-    const hasStrictRestrictions = listValues(profile.allergies).length || listValues(profile.prefs?.disliked).length;
-    return `<div class="col-md-6 col-xl-3">
-      <article class="planner-meal-card planner-empty-card soft-shadow h-100">
-        <div class="planner-card-head">
-          <span class="planner-meal-icon">${mealIcon(label)}</span>
-          <div><strong>${escapeHtml(label)}</strong><small>цель ${target} ккал</small></div>
-        </div>
-        <div class="planner-empty-illustration"><i class="bi bi-basket"></i></div>
-        <h3>Нет подходящего блюда</h3>
-        <p>${hasStrictRestrictions ? "Все блюда для этого приёма попали под аллергию или список «избегать»." : "В базе пока не хватает блюд для этого приёма пищи."}</p>
-        <a href="library.html" class="btn btn-sm btn-outline-primary mt-auto">Открыть библиотеку</a>
-      </article>
-    </div>`;
+  function renderDishNote(slot, profile) {
+    const info = window.PlannerEngine.preferenceInfo(slot.dish, profile);
+    if (info.liked.length) {
+      return `<div class="planner-match"><i class="bi bi-heart-fill"></i> Совпало с любимым: ${info.liked.map(escapeHtml).join(", ")}</div>`;
+    }
+    return '<div class="planner-safe"><i class="bi bi-shield-check"></i> Проверено по ограничениям профиля</div>';
   }
 
-  function renderCard(label, target, dish, profile) {
-    if (!dish) return renderNoDish(label, target, profile);
-    const image = dish.image || "img/hero.jpg";
-    const delta = Math.round(Number(dish.calories || 0) - target);
-    const deltaText = delta === 0 ? "точно в цель" : `${delta > 0 ? "+" : ""}${delta} ккал от цели`;
-
-    return `<div class="col-md-6 col-xl-3">
-      <article class="planner-meal-card soft-shadow h-100">
-        <div class="planner-card-image-wrap">
-          <img src="${escapeHtml(image)}" alt="${escapeHtml(dish.name)}" class="planner-card-image">
-          <span class="planner-meal-badge">${mealIcon(label)} ${escapeHtml(label)}</span>
-          <span class="planner-target-badge">${escapeHtml(deltaText)}</span>
-        </div>
-        <div class="planner-card-body">
-          <div class="planner-card-title-row">
-            <h3>${escapeHtml(dish.name)}</h3>
-            <span>${target} ккал</span>
+  function renderEmptySlot(slot) {
+    return `
+      <div class="col-md-6 col-xl-3">
+        <article class="planner-meal-card planner-empty-card soft-shadow h-100">
+          <div class="planner-card-head">
+            <span class="planner-meal-icon">${mealIcon(slot.label)}</span>
+            <div><strong>${escapeHtml(slot.label)}</strong><small>цель ${slot.targetCalories} ккал</small></div>
           </div>
-          ${renderMacroPills(dish)}
-          ${renderIngredientsPreview(dish)}
-          ${renderDishNote(dish, profile)}
-          <a href="dish_detail.html?id=${encodeURIComponent(dish.id)}" class="btn btn-sm btn-primary planner-recipe-btn">Открыть рецепт <i class="bi bi-arrow-right"></i></a>
-        </div>
-      </article>
-    </div>`;
+          <div class="planner-empty-illustration"><i class="bi bi-basket"></i></div>
+          <h3>Нет подходящего блюда</h3>
+          <p>Расширь базу рецептов или проверь ограничения в профиле.</p>
+          <a href="submit_recipe.html" class="btn btn-sm btn-outline-primary mt-auto">Добавить рецепт</a>
+        </article>
+      </div>`;
   }
 
-  function renderPlanSummary(cards, calories, usedDishes, profile) {
-    const total = usedDishes.reduce((sum, dish) => addTotals(sum, {
-      calories: Number(dish.calories || 0),
-      protein: Number(dish.protein || 0),
-      fat: Number(dish.fat || 0),
-      carbs: Number(dish.carbs || 0)
-    }), { calories: 0, protein: 0, fat: 0, carbs: 0 });
-    const delta = Math.round(total.calories - calories);
-    const likedMatches = usedDishes.reduce((count, dish) => count + preferenceInfo(dish, profile).liked.length, 0);
-    const deltaLabel = delta === 0 ? "точно по цели" : `${delta > 0 ? "+" : ""}${delta} ккал`;
+  function renderCard(slot, slotIndex, profile) {
+    if (!slot.dish) return renderEmptySlot(slot);
+
+    const image = slot.dish.image || "img/hero.jpg";
+    const adjustedCalories = Number(slot.nutrition?.calories || 0);
+    const delta = Math.round(adjustedCalories - slot.targetCalories);
+    const deltaText = Math.abs(delta) <= 5
+      ? "почти точно в цель"
+      : `${delta > 0 ? "+" : ""}${delta} ккал от цели`;
+    const portionPercent = Math.round(slot.portionFactor * 100);
 
     return `
-      <section class="planner-result">
-        <div class="planner-summary soft-shadow">
+      <div class="col-md-6 col-xl-3">
+        <article class="planner-meal-card soft-shadow h-100">
+          <div class="planner-card-image-wrap">
+            <img src="${escapeHtml(image)}" alt="${escapeHtml(slot.dish.name)}" class="planner-card-image" loading="lazy">
+            <span class="planner-meal-badge">${mealIcon(slot.label)} ${escapeHtml(slot.label)}</span>
+            <span class="planner-target-badge">${escapeHtml(deltaText)}</span>
+          </div>
+          <div class="planner-card-body">
+            <div class="planner-card-title-row">
+              <h3>${escapeHtml(slot.dish.name)}</h3>
+              <span>${slot.targetCalories} ккал</span>
+            </div>
+            <div class="small text-muted mb-2">Порция: ${portionPercent}% от базового рецепта</div>
+            ${renderMacroPills(slot.nutrition)}
+            ${renderIngredientsPreview(slot)}
+            ${renderDishNote(slot, profile)}
+            <div class="d-grid gap-2 mt-auto">
+              <a href="dish_detail.html?id=${encodeURIComponent(window.PlannerEngine.dishKey(slot.dish))}" class="btn btn-sm btn-primary planner-recipe-btn">
+                Открыть рецепт <i class="bi bi-arrow-right"></i>
+              </a>
+              <button class="btn btn-sm btn-outline-primary" type="button" data-action="replace" data-slot-index="${slotIndex}">
+                <i class="bi bi-arrow-repeat"></i> Заменить блюдо
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>`;
+  }
+
+  function renderShoppingList(plan) {
+    if (!plan.shoppingList.length) return "";
+    const items = plan.shoppingList.map(item => {
+      const amount = item.grams > 0 ? `${fmt(item.grams, 0)} г` : "по рецепту";
+      return `<li class="list-group-item d-flex justify-content-between gap-3"><span>${escapeHtml(item.name)}</span><strong>${amount}</strong></li>`;
+    }).join("");
+
+    return `
+      <section class="soft-shadow bg-white rounded-4 p-4 mt-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
           <div>
-            <div class="small-muted mb-1">Итог дня</div>
-            <h2>${fmt(total.calories, 0)} ккал</h2>
-            <p>${escapeHtml(deltaLabel)} относительно цели ${fmt(calories, 0)} ккал</p>
+            <div class="small-muted">Автоматически из выбранных рецептов</div>
+            <h2 class="h4 mb-0">Список покупок</h2>
           </div>
-          <div class="planner-summary-grid">
-            <div><strong>${fmt(total.protein)}</strong><small>белки</small></div>
-            <div><strong>${fmt(total.fat)}</strong><small>жиры</small></div>
-            <div><strong>${fmt(total.carbs)}</strong><small>углеводы</small></div>
-            <div><strong>${likedMatches}</strong><small>совпадений</small></div>
-          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-action="copy-shopping-list">
+            <i class="bi bi-clipboard"></i> Скопировать
+          </button>
         </div>
-        <div class="row g-4">${cards}</div>
+        <ul class="list-group list-group-flush">${items}</ul>
       </section>`;
   }
 
-  renderRestrictions(getProfile());
+  function renderPlan(plan) {
+    const delta = plan.deltaCalories;
+    const deltaLabel = Math.abs(delta) <= 20
+      ? "почти точно по цели"
+      : `${delta > 0 ? "+" : ""}${delta} ккал относительно цели`;
+    const cards = plan.slots.map((slot, index) => renderCard(slot, index, plan.profile)).join("");
 
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-    const calories = Number(document.getElementById("calories").value || 2000);
-    const meals = Number(document.getElementById("meals").value || 4);
+    output.innerHTML = `
+      <section class="planner-result">
+        <div class="planner-summary soft-shadow">
+          <div>
+            <div class="small-muted mb-1">Итог дня с учётом размеров порций</div>
+            <h2>${fmt(plan.total.calories, 0)} ккал</h2>
+            <p>${escapeHtml(deltaLabel)} ${fmt(plan.targetCalories, 0)} ккал</p>
+          </div>
+          <div class="planner-summary-grid">
+            <div><strong>${fmt(plan.total.protein)}</strong><small>белки</small></div>
+            <div><strong>${fmt(plan.total.fat)}</strong><small>жиры</small></div>
+            <div><strong>${fmt(plan.total.carbs)}</strong><small>углеводы</small></div>
+            <div><strong>${plan.likedMatches}</strong><small>совпадений</small></div>
+          </div>
+        </div>
+        <div class="row g-4">${cards}</div>
+        ${renderShoppingList(plan)}
+      </section>`;
+  }
+
+  function generate() {
+    const requestedCalories = Number(caloriesInput.value || 2000);
+    const calories = Math.min(Math.max(requestedCalories, 1200), 6000);
+    const meals = Number(mealsInput.value || 4);
     const profile = getProfile();
-    const slots = mealSlots(meals);
-    const used = new Set();
-    const picked = [];
 
+    if (requestedCalories !== calories) caloriesInput.value = calories;
     renderRestrictions(profile);
 
-    const cards = slots.map(([label, type, ratio]) => {
-      const target = Math.round(calories * ratio);
-      const best = pickBestDish(type, target, profile, used);
-      if (best) {
-        used.add(best.id);
-        picked.push(best);
-      }
-      return renderCard(label, target, best, profile);
-    }).join("");
+    currentPlan = window.PlannerEngine.generatePlan({ dishes, calories, meals, profile });
+    renderPlan(currentPlan);
+  }
 
-    output.innerHTML = renderPlanSummary(cards, calories, picked, profile);
+  function copyShoppingList() {
+    if (!currentPlan?.shoppingList?.length) return;
+    const text = currentPlan.shoppingList
+      .map(item => `• ${item.name} — ${item.grams > 0 ? `${Math.round(item.grams)} г` : "по рецепту"}`)
+      .join("\n");
+    navigator.clipboard?.writeText(text).then(() => {
+      const button = output.querySelector('[data-action="copy-shopping-list"]');
+      if (!button) return;
+      const original = button.innerHTML;
+      button.innerHTML = '<i class="bi bi-check-lg"></i> Скопировано';
+      setTimeout(() => { button.innerHTML = original; }, 1400);
+    }).catch(() => {});
+  }
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    generate();
   });
+
+  output.addEventListener("click", event => {
+    const button = event.target.closest("button[data-action]");
+    if (!button || !currentPlan) return;
+
+    if (button.dataset.action === "replace") {
+      const slotIndex = Number(button.dataset.slotIndex);
+      const candidates = window.PlannerEngine.replacementCandidates({
+        plan: currentPlan,
+        slotIndex,
+        dishes,
+        limit: 1
+      });
+      if (!candidates.length) {
+        button.disabled = true;
+        button.innerHTML = '<i class="bi bi-slash-circle"></i> Нет альтернатив';
+        return;
+      }
+      currentPlan = window.PlannerEngine.replaceSlot(currentPlan, slotIndex, dishes);
+      renderPlan(currentPlan);
+    }
+
+    if (button.dataset.action === "copy-shopping-list") copyShoppingList();
+  });
+
+  renderRestrictions(getProfile());
 });

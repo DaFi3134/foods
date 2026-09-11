@@ -1,8 +1,4 @@
 (function () {
-  function getConfig() {
-    return window.SUBMISSION_CONFIG || {};
-  }
-
   function getSubmissionType(form) {
     return form.dataset.submissionType || form.querySelector('[name="Тип заявки"]')?.value || "Заявка";
   }
@@ -10,7 +6,6 @@
   function collectFields(form) {
     const data = new FormData(form);
     const fields = {};
-
     for (const [name, value] of data.entries()) {
       if (!name || name === "_gotcha" || name === "_subject") continue;
       const cleanValue = String(value || "").trim();
@@ -23,7 +18,6 @@
         fields[name] = cleanValue;
       }
     }
-
     return fields;
   }
 
@@ -39,6 +33,7 @@
       box = document.createElement("div");
       box.className = "submission-status";
       box.setAttribute("role", "status");
+      box.setAttribute("aria-live", "polite");
       const bottom = form.querySelector(".submit-bottom");
       form.insertBefore(box, bottom || null);
     }
@@ -54,7 +49,6 @@
   function toggleSubmitting(form, isSubmitting) {
     const button = form.querySelector('button[type="submit"]');
     if (!button) return;
-
     if (!button.dataset.originalHtml) button.dataset.originalHtml = button.innerHTML;
     button.disabled = isSubmitting;
     button.innerHTML = isSubmitting
@@ -67,26 +61,21 @@
     try {
       await navigator.clipboard.writeText(text);
       return true;
-    } catch (error) {
+    } catch (_) {
       return false;
     }
   }
 
   function showSetupNotice(form) {
     if ((window.CFContent && window.CFContent.isConfigured()) || form.querySelector(".submission-setup-notice")) return;
-
     const notice = document.createElement("div");
     notice.className = "submission-setup-notice";
     notice.innerHTML = `
       <div class="submission-setup-icon"><i class="bi bi-database-gear"></i></div>
       <div>
-        <h5>Supabase нужно подключить один раз</h5>
-        <p>
-          Сейчас в <code>docs/js/submission-config.js</code> стоят тестовые значения.
-          Вставь <code>Project URL</code> и <code>anon key</code> из Supabase, чтобы заявки сохранялись в базу.
-        </p>
+        <h5>Supabase ещё не подключён</h5>
+        <p>Укажи Project URL и publishable key в <code>docs/js/submission-config.js</code>.</p>
       </div>`;
-
     form.prepend(notice);
   }
 
@@ -97,19 +86,14 @@
     const title = window.CFContent
       ? window.CFContent.titleFromFields(type, fields)
       : fields["Название продукта"] || fields["Название рецепта"] || fields["Заголовок"] || "Новая заявка";
-    const submittedAt = new Date().toISOString();
 
     return {
       type,
       title,
-      author_name: fields["Автор"] || fields["Контакт"] || null,
-      author_email: null,
-      status: "pending",
+      author_name: fields["Автор"] || null,
       payload: {
         fields,
-        page: window.location.href,
-        submitted_at: submittedAt,
-        user_agent: navigator.userAgent
+        source_page: window.location.pathname
       }
     };
   }
@@ -118,8 +102,8 @@
     event.preventDefault();
     const form = event.currentTarget;
 
+    // Lightweight honeypot. The Edge Function rate limit is the real anti-spam layer.
     if (form.querySelector('[name="_gotcha"]')?.value) return;
-
     if (!form.checkValidity()) {
       form.classList.add("was-validated");
       form.reportValidity();
@@ -130,7 +114,6 @@
     const textSummary = [
       `Тип заявки: ${getSubmissionType(form)}`,
       `Заголовок: ${submission.title}`,
-      `Страница: ${window.location.href}`,
       "",
       formatFields(submission.payload.fields)
     ].join("\n");
@@ -148,13 +131,11 @@
     }
 
     toggleSubmitting(form, true);
-    setStatus(form, "info", "Сохраняем заявку в базу на модерацию...");
-
+    setStatus(form, "info", "Отправляем заявку на модерацию...");
     try {
       await window.CFContent.insertSubmission(submission);
       form.reset();
-      const successUrl = `${getConfig().successPage || "thank_you.html"}?type=${encodeURIComponent(getSubmissionType(form))}`;
-      window.location.href = successUrl;
+      window.location.href = `thank_you.html?type=${encodeURIComponent(getSubmissionType(form))}`;
     } catch (error) {
       setStatus(form, "error", error.message || "Не удалось отправить заявку. Попробуй позже.");
     } finally {
@@ -165,6 +146,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("form.pretty-submit-form").forEach(form => {
       form.setAttribute("action", "#");
+      showSetupNotice(form);
       form.addEventListener("submit", handleSubmit);
     });
   });

@@ -13,18 +13,17 @@
 </head>
 <body>
 <header id="site-header"></header>
-
 <main class="py-4">
   <div class="container">
     <section class="submit-hero submit-hub-hero soft-shadow mb-4">
       <div class="submit-hero-content">
-        <span class="submit-eyebrow"><i class="bi bi-database-check"></i> Для владельца сайта</span>
-        <h1>Как подключить заявки и админку</h1>
-        <p>Формы продуктов, рецептов и статей сохраняют заявки в Supabase. В админке можно проверить материал, исправить поля и нажать «Одобрить» — после этого он появляется на сайте.</p>
+        <span class="submit-eyebrow"><i class="bi bi-shield-check"></i> Для владельца сайта</span>
+        <h1>Настройка Supabase, модерации и AI</h1>
+        <p>Публичный сайт читает только одобренные материалы. Новые заявки проходят через Edge Function, а права владельца проверяются сервером по UUID пользователя Supabase Auth.</p>
       </div>
       <div class="submit-hero-badge">
-        <i class="bi bi-check2-circle"></i>
-        <span>Без ручной правки JSON и GitHub</span>
+        <i class="bi bi-lock"></i>
+        <span>Секретные ключи не попадают в браузер</span>
       </div>
     </section>
 
@@ -33,8 +32,8 @@
         <article class="instruction-step soft-shadow h-100">
           <div class="instruction-number">1</div>
           <div>
-            <h3>Создайте проект Supabase</h3>
-            <p>После создания проекта откройте <code>SQL Editor</code> и запустите файл <code>docs/supabase-schema.sql</code>. Перед запуском замените <code>YOUR_ADMIN_EMAIL</code> на свой email.</p>
+            <h3>Выполни SQL-миграцию</h3>
+            <p>Открой <code>SQL Editor</code> и выполни целиком <code>docs/supabase-schema.sql</code>. Скрипт создаёт RLS, таблицу администраторов, публичное представление и серверный rate limit.</p>
           </div>
         </article>
       </div>
@@ -43,8 +42,8 @@
         <article class="instruction-step soft-shadow h-100">
           <div class="instruction-number">2</div>
           <div>
-            <h3>Создайте пользователя владельца</h3>
-            <p>В Supabase откройте <code>Authentication → Users</code>, добавьте пользователя с тем же email и задайте пароль. Этим email и паролем вы будете входить в <code>owner-panel.html</code>.</p>
+            <h3>Создай владельца</h3>
+            <p>В <code>Authentication → Users</code> создай пользователя. Затем добавь его UUID в <code>public.site_admins</code> командой из комментария в конце SQL-файла.</p>
           </div>
         </article>
       </div>
@@ -53,8 +52,8 @@
         <article class="instruction-step soft-shadow h-100">
           <div class="instruction-number">3</div>
           <div>
-            <h3>Вставьте ключи проекта</h3>
-            <p>Откройте <code>docs/js/submission-config.js</code> и вставьте туда <code>Project URL</code>, <code>anon key</code> и свой <code>adminEmail</code>. Secret/service_role ключи на сайт не вставляйте.</p>
+            <h3>Проверь публичный конфиг</h3>
+            <p>В <code>docs/js/submission-config.js</code> должны быть только Project URL и publishable key. Не добавляй туда OpenAI key, Supabase secret key или email администратора.</p>
           </div>
         </article>
       </div>
@@ -63,23 +62,27 @@
         <article class="instruction-step soft-shadow h-100">
           <div class="instruction-number">4</div>
           <div>
-            <h3>Проверьте полный путь</h3>
-            <p>Отправьте тестовый продукт через <a href="submit_product.html">форму</a>, откройте <a href="owner-panel.html">админку</a>, войдите, нажмите «Одобрить» и проверьте, что продукт появился в каталоге.</p>
+            <h3>Разверни две Edge Functions</h3>
+            <p>Выполни <code>supabase functions deploy</code>. Функция <code>submit-content</code> принимает и ограничивает заявки, а <code>ai-assistant</code> безопасно обращается к OpenAI.</p>
           </div>
         </article>
       </div>
     </section>
 
-    <section class="submission-admin-note soft-shadow">
-      <div class="submission-admin-icon"><i class="bi bi-shield-lock"></i></div>
+    <section class="submission-admin-note soft-shadow mb-4">
+      <div class="submission-admin-icon"><i class="bi bi-person-lock"></i></div>
       <div>
         <h2>Как работает безопасность</h2>
-        <p class="mb-0">Посетители могут только отправлять новые заявки и читать уже одобренные материалы. Просматривать ожидающие заявки и менять статус может только пользователь Supabase Auth с email, который вы указали в SQL-политиках.</p>
+        <p class="mb-0">Анонимный браузер не имеет прямого <code>INSERT</code> в <code>submissions</code>. Просматривать очередь, менять статус и удалять заявки может только авторизованный пользователь, для которого <code>is_site_admin()</code> возвращает <code>true</code>.</p>
       </div>
     </section>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-primary" href="owner-panel.html"><i class="bi bi-shield-lock me-1"></i> Открыть админку</a>
+      <a class="btn btn-outline-primary" href="submit_product.html"><i class="bi bi-send me-1"></i> Тестовая заявка</a>
+    </div>
   </div>
 </main>
-
 <footer id="site-footer"></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/core.js"></script>

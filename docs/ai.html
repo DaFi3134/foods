@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="AI-помощник healthy food: ответы по рациону на основе профиля и базы рецептов сайта.">
+  <title>AI-помощник — healthy food</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/ai.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main class="ai-page py-4">
+    <div class="container">
+      <section class="ai-hero soft-shadow mb-4">
+        <div>
+          <span class="ai-eyebrow"><i class="bi bi-stars"></i> Новый раздел</span>
+          <h1>AI-помощник по питанию</h1>
+          <p class="mb-0">Задавай вопросы обычным языком. Помощник получает только предпочтения, ограничения, расчётную дневную цель и список блюд из базы сайта.</p>
+        </div>
+        <div class="ai-hero-icon" aria-hidden="true"><i class="bi bi-robot"></i></div>
+      </section>
+
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <section class="ai-chat-card soft-shadow">
+            <div class="ai-chat-head">
+              <div>
+                <div class="small-muted">Вопрос</div>
+                <h2 class="h4 mb-0">Что хочешь узнать?</h2>
+              </div>
+              <span class="badge rounded-pill text-bg-light border" id="aiTargetBadge">цель: —</span>
+            </div>
+
+            <div class="ai-quick-prompts" aria-label="Быстрые вопросы">
+              <button type="button" data-prompt="Что лучше выбрать на ужин из моих доступных блюд?">Что на ужин?</button>
+              <button type="button" data-prompt="Составь пример рациона на день из блюд моей базы и объясни выбор.">Рацион на день</button>
+              <button type="button" data-prompt="Какие блюда из моей базы помогут набрать больше белка без сильного превышения калорий?">Добрать белок</button>
+              <button type="button" data-prompt="Предложи несколько вариантов перекуса из моей базы с учётом профиля.">Перекус</button>
+            </div>
+
+            <form id="aiForm">
+              <label class="form-label fw-semibold" for="aiMessage">Сообщение</label>
+              <textarea id="aiMessage" class="form-control" rows="5" maxlength="2000" required placeholder="Например: у меня осталось примерно 600 ккал. Что выбрать на ужин?"></textarea>
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                <small class="text-muted">Не отправляй в чат ФИО, телефон, адрес и другие лишние персональные данные.</small>
+                <button id="aiSubmit" class="btn btn-primary" type="submit">
+                  <i class="bi bi-stars"></i> Спросить AI
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section id="aiResult" class="ai-result soft-shadow mt-4 d-none" aria-live="polite">
+            <div class="ai-result-title">
+              <div class="ai-avatar"><i class="bi bi-robot"></i></div>
+              <div>
+                <div class="small-muted">Ответ помощника</div>
+                <strong>healthy food AI</strong>
+              </div>
+            </div>
+            <div id="aiAnswer" class="ai-answer"></div>
+            <div id="aiWarnings"></div>
+            <div id="aiRecommendations"></div>
+          </section>
+        </div>
+
+        <div class="col-lg-4">
+          <aside class="ai-side-card soft-shadow mb-4">
+            <div class="ai-side-icon"><i class="bi bi-person-check"></i></div>
+            <h2 class="h5">Что учитывается</h2>
+            <div id="aiProfileSummary" class="small"></div>
+            <a href="profile.html" class="btn btn-sm btn-outline-primary mt-3">Изменить профиль</a>
+          </aside>
+
+          <aside class="ai-side-card soft-shadow">
+            <div class="ai-side-icon"><i class="bi bi-shield-exclamation"></i></div>
+            <h2 class="h5">Границы помощника</h2>
+            <p class="small text-muted mb-0">Это справочный инструмент, а не врач. Он не должен ставить диагнозы, назначать лечение или подменять рекомендации специалиста. При аллергиях проверяй реальный состав и маркировку продукта.</p>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/core.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/submission-config.js"></script>
+  <script src="js/supabase-content.js"></script>
+  <script src="js/planner-engine.js"></script>
+  <script src="js/ai.js"></script>
+</body>
+</html>

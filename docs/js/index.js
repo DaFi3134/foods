@@ -1,214 +1,136 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  let products = [];
-  let dishes = [];
-  let myths = [];
+  "use strict";
 
-  try {
-    products = await loadJson(DATA_PATHS.products);
-  } catch (error) {
-    console.error("Не удалось загрузить продукты:", error);
+  const state = { products: [], dishes: [], myths: [] };
+
+  function setText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
   }
 
-  try {
-    dishes = await loadJson(DATA_PATHS.dishes);
-  } catch (error) {
-    console.error("Не удалось загрузить рецепты:", error);
+  function toArray(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return String(value).split(",").map(item => item.trim()).filter(Boolean);
   }
 
-  try {
-    myths = await loadJson(DATA_PATHS.myths);
-  } catch (error) {
-    console.error("Не удалось загрузить мифы:", error);
+  function dishTitle(dish) {
+    return dish?.name || dish?.title || dish?.recipe_name || "Рецепт без названия";
   }
 
-  setText("productsCount", products.length);
-  setText("dishesCount", dishes.length);
-  setText("mythsCount", myths.length);
-
-  renderRecipesCarousel(dishes.slice(0, 6));
-  renderMythsCarousel(myths.slice(0, 6));
-
-  initCarousel("recipesCarousel");
-  initCarousel("mythsCarousel");
-});
-
-function setText(id, value) {
-  const element = document.getElementById(id);
-  if (element) {
-    element.textContent = value;
-  }
-}
-
-function toArray(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  return String(value)
-    .split(",")
-    .map(item => item.trim())
-    .filter(Boolean);
-}
-
-function getDishTitle(dish) {
-  return dish.name || dish.title || dish.recipe_name || "Рецепт без названия";
-}
-
-function getDishImage(dish) {
-  return dish.image || dish.img || "img/hero.jpg";
-}
-
-function getDishCalories(dish) {
-  return dish.calories || dish.kcal || dish.energy || 0;
-}
-
-function getDishId(dish, index) {
-  return dish.id || dish.num_id || index + 1;
-}
-
-function getDishIngredients(dish) {
-  const ingredients = dish.ingredients || [];
-
-  if (!Array.isArray(ingredients)) {
-    return String(ingredients).slice(0, 120);
+  function dishImage(dish) {
+    return dish?.image || dish?.img || "img/hero.jpg";
   }
 
-  return ingredients
-    .slice(0, 3)
-    .map(item => {
+  function dishId(dish, index) {
+    return dish?.id ?? dish?.num_id ?? index + 1;
+  }
+
+  function dishIngredients(dish) {
+    const ingredients = dish?.ingredients || [];
+    if (!Array.isArray(ingredients)) return String(ingredients).slice(0, 120);
+    return ingredients.slice(0, 3).map(item => {
       if (typeof item === "string") return item;
-
-      const product = item.product || item.name || "Продукт";
-      const grams = item.grams || item.amount || "";
-
+      const product = item?.product || item?.name || "Продукт";
+      const grams = item?.grams || item?.amount || "";
       return grams ? `${product} — ${grams} г` : product;
-    })
-    .join(", ");
-}
-
-function getMealText(dish) {
-  const types = toArray(dish.meal_types || dish.mealTypes || dish.category);
-
-  if (!types.length) return "Любой приём";
-
-  if (typeof mealTypeText === "function") {
-    return mealTypeText(types);
+    }).join(", ");
   }
 
-  return types.join(", ");
-}
-
-function renderRecipesCarousel(dishes) {
-  const inner = document.getElementById("recipesCarouselInner");
-  if (!inner) return;
-
-  if (!dishes.length) {
-    inner.innerHTML = `
-      <div class="carousel-item active">
-        <div class="empty-state text-center">
-          Пока нет рецептов.
-        </div>
-      </div>
-    `;
-    return;
+  function mealText(dish) {
+    const types = toArray(dish?.meal_types || dish?.mealTypes || dish?.category);
+    if (!types.length) return "Любой приём";
+    return typeof mealTypeText === "function" ? mealTypeText(types) : types.join(", ");
   }
 
-  inner.innerHTML = dishes.map((dish, index) => {
-    const title = getDishTitle(dish);
-    const image = getDishImage(dish);
-    const calories = getDishCalories(dish);
-    const ingredients = getDishIngredients(dish);
-    const mealText = getMealText(dish);
-    const id = getDishId(dish, index);
+  function renderRecipes(dishes) {
+    const inner = document.getElementById("recipesCarouselInner");
+    if (!inner) return;
+    if (!dishes.length) {
+      inner.innerHTML = '<div class="carousel-item active"><div class="empty-state text-center">Пока нет рецептов.</div></div>';
+      return;
+    }
 
-    return `
-      <div class="carousel-item ${index === 0 ? "active" : ""}">
-        <div class="card home-carousel-card soft-shadow">
-          <img 
-            src="${escapeHtml(image)}" 
-            class="card-img-top" 
-            alt="${escapeHtml(title)}"
-            onerror="this.src='img/hero.jpg'"
-          >
-
-          <div class="card-body">
-            <h5>${escapeHtml(title)}</h5>
-
-            <p class="small-muted mb-2">
-              ${escapeHtml(mealText)} · ${escapeHtml(calories)} ккал
-            </p>
-
-            ${
-              ingredients
-                ? `<p class="small text-muted">${escapeHtml(ingredients)}</p>`
-                : ""
-            }
-
-            <a href="dish_detail.html?id=${encodeURIComponent(id)}" class="btn btn-outline-primary">
-              Открыть рецепт
-            </a>
+    inner.innerHTML = dishes.slice(0, 6).map((dish, index) => {
+      const title = dishTitle(dish);
+      const ingredients = dishIngredients(dish);
+      return `
+        <div class="carousel-item ${index === 0 ? "active" : ""}">
+          <div class="card home-carousel-card soft-shadow">
+            <img src="${escapeHtml(dishImage(dish))}" class="card-img-top" alt="${escapeHtml(title)}" loading="lazy" onerror="this.src='img/hero.jpg'">
+            <div class="card-body">
+              <h5>${escapeHtml(title)}</h5>
+              <p class="small-muted mb-2">${escapeHtml(mealText(dish))} · ${fmt(dish?.calories || 0, 0)} ккал</p>
+              ${ingredients ? `<p class="small text-muted">${escapeHtml(ingredients)}</p>` : ""}
+              <a href="dish_detail.html?id=${encodeURIComponent(dishId(dish, index))}" class="btn btn-outline-primary">Открыть рецепт</a>
+            </div>
           </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-function renderMythsCarousel(myths) {
-  const inner = document.getElementById("mythsCarouselInner");
-  if (!inner) return;
-
-  if (!myths.length) {
-    inner.innerHTML = `
-      <div class="carousel-item active">
-        <div class="empty-state text-center">
-          Пока нет мифов и статей.
-        </div>
-      </div>
-    `;
-    return;
+        </div>`;
+    }).join("");
   }
 
-  inner.innerHTML = myths.map((myth, index) => {
-    const title = myth.title || myth.name || "Статья без названия";
-    const content = myth.content || myth.description || myth.text || "";
-    const image = myth.img || myth.image || "img/myth1.jpg";
-    const id = myth.id || index + 1;
+  function renderMyths(myths) {
+    const inner = document.getElementById("mythsCarouselInner");
+    if (!inner) return;
+    if (!myths.length) {
+      inner.innerHTML = '<div class="carousel-item active"><div class="empty-state text-center">Пока нет мифов и статей.</div></div>';
+      return;
+    }
 
-    return `
-      <div class="carousel-item ${index === 0 ? "active" : ""}">
-        <div class="card home-carousel-card soft-shadow">
-          <img 
-            src="${escapeHtml(image)}" 
-            class="card-img-top" 
-            alt="${escapeHtml(title)}"
-            onerror="this.src='img/myth1.jpg'"
-          >
-
-          <div class="card-body">
-            <h5>${escapeHtml(title)}</h5>
-
-            <p class="small text-muted">
-              ${escapeHtml(content.slice(0, 160))}
-              ${content.length > 160 ? "..." : ""}
-            </p>
-
-            <a href="myth_detail.html?id=${encodeURIComponent(id)}" class="btn btn-outline-primary">
-              Читать
-            </a>
+    inner.innerHTML = myths.slice(0, 6).map((myth, index) => {
+      const title = myth?.title || myth?.name || "Статья без названия";
+      const content = String(myth?.content || myth?.description || myth?.text || "");
+      const image = myth?.img || myth?.image || "img/myth1.jpg";
+      const id = myth?.id ?? index + 1;
+      return `
+        <div class="carousel-item ${index === 0 ? "active" : ""}">
+          <div class="card home-carousel-card soft-shadow">
+            <img src="${escapeHtml(image)}" class="card-img-top" alt="${escapeHtml(title)}" loading="lazy" onerror="this.src='img/myth1.jpg'">
+            <div class="card-body">
+              <h5>${escapeHtml(title)}</h5>
+              <p class="small text-muted">${escapeHtml(content.slice(0, 160))}${content.length > 160 ? "…" : ""}</p>
+              <a href="myth_detail.html?id=${encodeURIComponent(id)}" class="btn btn-outline-primary">Читать</a>
+            </div>
           </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-function initCarousel(id) {
-  const element = document.getElementById(id);
-
-  if (element && window.bootstrap) {
-    new bootstrap.Carousel(element, {
-      interval: false,
-      touch: true,
-      ride: false
-    });
+        </div>`;
+    }).join("");
   }
-}
+
+  function render() {
+    setText("productsCount", state.products.length);
+    setText("dishesCount", state.dishes.length);
+    setText("mythsCount", state.myths.length);
+    renderRecipes(state.dishes);
+    renderMyths(state.myths);
+  }
+
+  async function loadLocal() {
+    const results = await Promise.allSettled([
+      loadJson(DATA_PATHS.products),
+      loadJson(DATA_PATHS.dishes),
+      loadJson(DATA_PATHS.myths)
+    ]);
+    state.products = results[0].status === "fulfilled" ? results[0].value : [];
+    state.dishes = results[1].status === "fulfilled" ? results[1].value : [];
+    state.myths = results[2].status === "fulfilled" ? results[2].value : [];
+    results.filter(item => item.status === "rejected").forEach(item => console.error(item.reason));
+  }
+
+  await loadLocal();
+  render();
+
+  if (!window.CFContent?.isConfigured()) return;
+  try {
+    const [products, dishes, myths] = await Promise.all([
+      window.CFContent.loadProducts(),
+      window.CFContent.loadDishes(),
+      window.CFContent.loadMyths()
+    ]);
+    state.products = products;
+    state.dishes = dishes;
+    state.myths = myths;
+    render();
+  } catch (error) {
+    console.warn("Supabase-материалы не догрузились, главная остаётся на локальных данных:", error);
+  }
+});

@@ -1,0 +1,7 @@
+project_id = "foods"
+
+[functions.ai-assistant]
+verify_jwt = false
+
+[functions.submit-content]
+verify_jwt = false

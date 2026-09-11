@@ -1,0 +1,19 @@
+healthy food patch v3
+
+1) Распакуй содержимое архива в КОРЕНЬ репозитория foods с заменой файлов.
+2) Прочитай README_PATCH_RU.md.
+3) Выполни docs/supabase-schema.sql в Supabase SQL Editor.
+4) Добавь владельца в public.site_admins (команда есть в README и внизу SQL).
+5) Создай .env по образцу .env.example и укажи OPENAI_API_KEY + RATE_LIMIT_SALT.
+6) Выполни:
+   supabase login
+   supabase link --project-ref qygayinuchdngerceupt
+   supabase secrets set --env-file .env
+   supabase functions deploy
+7) Локально проверь:
+   npm test
+   pip install -r requirements.txt
+   python app.py
+8) После проверки git add/commit/push.
+
+Важно: не коммить .env и не вставляй OpenAI/Supabase secret key в docs/*.html или docs/js/*.js.

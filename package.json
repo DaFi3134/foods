@@ -1,0 +1,12 @@
+{
+  "name": "healthy-food-quality-tools",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "check:js": "node tools/check-js.mjs",
+    "check:data": "node tools/validate-data.mjs",
+    "test:planner": "node tests/planner-engine.test.mjs",
+    "test": "npm run check:js && npm run test:planner && npm run check:data"
+  }
+}

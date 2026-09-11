@@ -58,6 +58,15 @@
           <span>Открыть форму <i class="bi bi-arrow-right"></i></span>
         </div>
       </a>
+
+      <a class="submission-option-card soft-shadow" href="submit_myth.html">
+        <div class="submission-option-icon article"><i class="bi bi-question-circle"></i></div>
+        <div>
+          <h2>Миф или утверждение</h2>
+          <p>Отправь спорное утверждение о питании, источники и пояснение — оно попадёт в ту же очередь модерации.</p>
+          <span>Открыть форму <i class="bi bi-arrow-right"></i></span>
+        </div>
+      </a>
     </section>
 
     <section class="submission-admin-note soft-shadow">
@@ -65,7 +74,7 @@
       <div>
         <h2>Чтобы заявки сохранялись и публиковались</h2>
         <p>
-          Откройте <code>docs/js/submission-config.js</code> и вставьте <code>Project URL</code> и <code>anon key</code> из Supabase. Затем откройте <code>owner-panel.html</code>, войдите и одобряйте заявки.
+          В <code>docs/js/submission-config.js</code> должны быть Project URL и publishable key Supabase. Новые заявки сохраняются через Edge Function; при настроенном Resend владельцу дополнительно приходит email. Затем откройте <code>owner-panel.html</code>, войдите и одобряйте заявки.
         </p>
         <a class="btn btn-outline-primary" href="admin_moderation.html">Инструкция по Supabase</a>
       </div>

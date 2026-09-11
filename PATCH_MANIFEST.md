@@ -3,10 +3,14 @@
 ## Replace existing files
 
 - `.gitignore`
+- `docs/data/dishes.json`
+- `docs/data/products.json`
 - `app.py`
 - `requirements.txt`
 - `docs/index.html`
 - `docs/planner.html`
+- `docs/submit.html`
+- `docs/submit_recipe.html`
 - `docs/owner-panel.html`
 - `docs/admin_moderation.html`
 - `docs/supabase-schema.sql`
@@ -25,6 +29,7 @@
 - `README_PATCH_RU.md`
 - `START_HERE.txt`
 - `DATA_QUALITY_NOTES.md`
+- `AUDIT_RECIPES_AND_SUBMISSIONS_RU.md`
 - `docs/ai.html`
 - `docs/css/ai.css`
 - `docs/js/ai.js`
@@ -39,7 +44,6 @@
 
 ## Intentionally untouched
 
-- `docs/data/*.json` — conflicting nutrition values are reported, not silently rewritten.
 - `docs/img/**` — existing media is kept.
 - most page-specific scripts — they continue to use `core.js` and the rewritten `CFContent` API.
 - `templates/**` and `static/**` — legacy files may be deleted after the canonical `docs/` version is verified; the new `app.py` no longer depends on them.

@@ -92,13 +92,46 @@
 
   function parseIngredients(value) {
     return splitLines(value).map(line => {
-      const match = line.match(/^(.+?)(?:\s*[—-]\s*|,\s*|\s+)(\d+(?:[.,]\d+)?)\s*(?:г|гр|gram|grams)?\b/i);
+      const match = line.match(/^(.+?)(?:\s*[—-]\s*|,\s*|\s+)(\d+(?:[.,]\d+)?)\s*(кг|kg|г|гр|g|gram|grams|мл|ml)?\s*$/i);
       if (!match) return { product: line, grams: 0 };
+      const unit = normalize(match[3] || "г");
+      const amount = Number(String(match[2]).replace(",", ".")) || 0;
       return {
         product: match[1].trim(),
-        grams: Number(String(match[2]).replace(",", ".")) || 0
+        grams: unit === "кг" || unit === "kg" ? amount * 1000 : amount
       };
     });
+  }
+
+  function deriveDishNutrition(dish, products) {
+    const ingredients = Array.isArray(dish?.ingredients) ? dish.ingredients : [];
+    if (!ingredients.length) return dish;
+
+    const byName = new Map((products || []).map(product => [normalize(product?.name), product]));
+    const totals = { calories: 0, protein: 0, fat: 0, carbs: 0 };
+    let matched = 0;
+
+    for (const ingredient of ingredients) {
+      const grams = Number(ingredient?.grams || 0);
+      if (!Number.isFinite(grams) || grams <= 0) return dish;
+      const product = byName.get(normalize(ingredient?.product));
+      if (!product) return dish;
+      matched += 1;
+      const factor = grams / 100;
+      totals.calories += Number(product.calories || 0) * factor;
+      totals.protein += Number(product.protein || 0) * factor;
+      totals.fat += Number(product.fat || 0) * factor;
+      totals.carbs += Number(product.carbs || 0) * factor;
+    }
+
+    if (!matched) return dish;
+    return {
+      ...dish,
+      calories: Number(dish.calories || 0) > 0 ? Number(dish.calories) : Number(totals.calories.toFixed(1)),
+      protein: Number(dish.protein || 0) > 0 ? Number(dish.protein) : Number(totals.protein.toFixed(1)),
+      fat: Number(dish.fat || 0) > 0 ? Number(dish.fat) : Number(totals.fat.toFixed(1)),
+      carbs: Number(dish.carbs || 0) > 0 ? Number(dish.carbs) : Number(totals.carbs.toFixed(1))
+    };
   }
 
   function parseInstructions(value) {
@@ -254,9 +287,16 @@
   }
 
   async function loadDishes() {
-    const local = await loadJson(DATA_PATHS.dishes);
+    const [local, products] = await Promise.all([
+      loadJson(DATA_PATHS.dishes),
+      loadProducts()
+    ]);
     const approved = await fetchApprovedSubmissions();
-    return mergeById(local, approved.filter(row => normalizeType(row.type) === "recipe").map(dishFromSubmission));
+    const remote = approved
+      .filter(row => normalizeType(row.type) === "recipe")
+      .map(dishFromSubmission)
+      .map(dish => deriveDishNutrition(dish, products));
+    return mergeById(local, remote);
   }
 
   async function loadMyths() {

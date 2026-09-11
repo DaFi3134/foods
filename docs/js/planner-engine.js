@@ -8,12 +8,35 @@
     "говядина": ["говядина", "говяж"],
     "свинина": ["свинина", "свин"],
     "рыба": ["рыба", "рыб", "лосось", "форель", "горбуша", "сельдь", "скумбрия"],
-    "молоко": ["молоко", "молоч"],
+    "молоко": ["молоко", "молоч", "кефир", "йогурт", "творог", "сыр", "сметан", "сливк"],
+    "молочные продукты": ["молоко", "молоч", "кефир", "йогурт", "творог", "сыр", "сметан", "сливк"],
+    "лактоза": ["молоко", "молоч", "кефир", "йогурт", "творог", "сыр", "сметан", "сливк"],
+    "глютен": ["мук", "макарон", "хлеб", "батон", "манн", "овсян", "геркулес"],
     "йогурт": ["йогурт"],
     "творог": ["творог", "творож"],
     "сыр": ["сыр", "сырн"],
     "овсянка": ["овсянка", "овсян", "геркулес"],
     "гречка": ["гречка", "греч", "гречнев"],
+    "рис": ["рис", "рисов"],
+    "макароны": ["макарон", "паста"],
+    "паста": ["макарон", "паста"],
+    "картофель": ["картоф"],
+    "картошка": ["картоф"],
+    "яйцо": ["яйц"],
+    "яйца": ["яйц"],
+    "яблоко": ["яблок"],
+    "яблоки": ["яблок"],
+    "лук": ["лук"],
+    "морковь": ["морков"],
+    "грибы": ["гриб", "шампиньон"],
+    "шампиньоны": ["гриб", "шампиньон"],
+    "кефир": ["кефир"],
+    "сметана": ["сметан"],
+    "сливки": ["сливк"],
+    "мука": ["мук"],
+    "свекла": ["свекл"],
+    "свёкла": ["свекл"],
+    "говяжий фарш": ["говядин", "говяж"],
     "помидор": ["помидор", "томат"],
     "томаты": ["томат", "помидор"],
     "огурец": ["огурец", "огурц"],
@@ -23,7 +46,31 @@
     "морепродукты": ["морепродукт", "кревет", "миди", "кальмар"]
   };
 
-  const DEFAULT_PORTION_LIMITS = { min: 0.65, max: 1.65 };
+  const DEFAULT_PORTION_LIMITS = { min: 0.40, max: 1.65 };
+
+  const INGREDIENT_CANONICAL_RULES = [
+    ["курица", ["курин", "курица"]],
+    ["индейка", ["индей", "индееч"]],
+    ["говядина", ["говядин", "говяж"]],
+    ["свинина", ["свинин", "свин"]],
+    ["рыба", ["лосос", "форел", "горбуш", "скумбр", "сельд", "рыб"]],
+    ["картофель", ["картоф"]],
+    ["макароны", ["макарон", "паста"]],
+    ["рис", ["рис"]],
+    ["гречка", ["греч"]],
+    ["овсянка", ["овсян", "геркулес"]],
+    ["творог", ["творог"]],
+    ["яйца", ["яйц"]],
+    ["капуста", ["капуст"]],
+    ["морковь", ["морков"]],
+    ["лук", ["лук"]],
+    ["томаты", ["томат", "помидор"]],
+    ["грибы", ["гриб", "шампиньон"]],
+    ["яблоки", ["яблок"]],
+    ["молоко", ["молок"]],
+    ["кефир", ["кефир"]],
+    ["сыр", ["сыр"]]
+  ];
 
   function normalize(value) {
     return String(value ?? "")
@@ -147,10 +194,17 @@
     };
   }
 
+  function canonicalIngredientName(value) {
+    const normalized = normalize(value);
+    if (!normalized) return "";
+    const rule = INGREDIENT_CANONICAL_RULES.find(([, needles]) => needles.some(needle => normalized.includes(needle)));
+    return rule ? rule[0] : normalized;
+  }
+
   function ingredientSet(dish) {
     return new Set(
       (dish?.ingredients || [])
-        .map(item => normalize(item?.product))
+        .map(item => canonicalIngredientName(item?.product))
         .filter(Boolean)
     );
   }
@@ -201,7 +255,10 @@
       : allowed.slice();
     const unusedTyped = typed.filter(dish => !usedKeys.has(dishKey(dish)));
     const unusedAny = allowed.filter(dish => !usedKeys.has(dishKey(dish)));
-    return [unusedTyped, typed, unusedAny, allowed].filter(pool => pool.length > 0);
+    // Prefer a fresh dish over repeating an already-used recipe. If no unused
+    // dish exists for the exact meal type, a reasonable cross-meal fallback is
+    // less annoying than three identical snacks in one day.
+    return [unusedTyped, unusedAny, typed, allowed].filter(pool => pool.length > 0);
   }
 
   function chooseDish({ dishes, type, targetCalories, profile, usedKeys, selectedDishes, excludeKeys = new Set() }) {
@@ -379,6 +436,7 @@
     mealSlots,
     portionForTarget,
     scaledNutrition,
+    canonicalIngredientName,
     allowedDishes,
     scoreDish,
     generatePlan,

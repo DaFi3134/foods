@@ -102,6 +102,8 @@
     event.preventDefault();
     const form = event.currentTarget;
 
+    if (form.dataset.submitting === "true") return;
+
     // Lightweight honeypot. The Edge Function rate limit is the real anti-spam layer.
     if (form.querySelector('[name="_gotcha"]')?.value) return;
     if (!form.checkValidity()) {
@@ -130,6 +132,7 @@
       return;
     }
 
+    form.dataset.submitting = "true";
     toggleSubmitting(form, true);
     setStatus(form, "info", "Отправляем заявку на модерацию...");
     try {
@@ -139,6 +142,7 @@
     } catch (error) {
       setStatus(form, "error", error.message || "Не удалось отправить заявку. Попробуй позже.");
     } finally {
+      delete form.dataset.submitting;
       toggleSubmitting(form, false);
     }
   }

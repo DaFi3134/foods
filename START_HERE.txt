@@ -4,10 +4,11 @@ healthy food patch v3
 2) Прочитай README_PATCH_RU.md.
 3) Выполни docs/supabase-schema.sql в Supabase SQL Editor.
 4) Добавь владельца в public.site_admins (команда есть в README и внизу SQL).
-5) Создай .env по образцу .env.example и укажи OPENAI_API_KEY + RATE_LIMIT_SALT.
+5) Создай .env по образцу .env.example. Для заявок на почту укажи RESEND_API_KEY,
+   SUBMISSION_FROM_EMAIL и SUBMISSION_NOTIFY_EMAIL. OPENAI_API_KEY нужен только для AI-раздела.
 6) Выполни:
    supabase login
-   supabase link --project-ref qygayinuchdngerceupt
+   supabase link --project-ref qekkfmsiwocrxbwyuwsa
    supabase secrets set --env-file .env
    supabase functions deploy
 7) Локально проверь:

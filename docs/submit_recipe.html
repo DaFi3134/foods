@@ -99,7 +99,22 @@
 
             <div class="col-md-3">
               <label class="form-label">Калорийность</label>
-              <input class="form-control" name="Калорийность" placeholder="350 ккал">
+              <input class="form-control" type="number" min="0" step="0.1" name="Калорийность" placeholder="350">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Белки, г</label>
+              <input class="form-control" type="number" min="0" step="0.1" name="Белки" placeholder="25">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Жиры, г</label>
+              <input class="form-control" type="number" min="0" step="0.1" name="Жиры" placeholder="12">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Углеводы, г</label>
+              <input class="form-control" type="number" min="0" step="0.1" name="Углеводы" placeholder="45">
             </div>
 
             <div class="col-12">
@@ -114,8 +129,8 @@
 
             <div class="col-12">
               <label class="form-label">Ингредиенты *</label>
-              <textarea class="form-control" name="Ингредиенты" rows="6" required placeholder="Каждый ингредиент с новой строки:&#10;Овсянка — 50 г&#10;Банан — 1 шт&#10;Молоко — 200 мл"></textarea>
-              <div class="form-hint">Лучше указывать граммы — так проще посчитать калорийность.</div>
+              <textarea class="form-control" name="Ингредиенты" rows="6" required placeholder="Каждый ингредиент с новой строки:&#10;Овсяные хлопья — 50 г&#10;Бананы — 100 г&#10;Молоко 2,5% — 200 мл"></textarea>
+              <div class="form-hint">Указывай вес в г/кг или объём в мл. Количество «1 шт.» нельзя надёжно перевести в граммы, поэтому такие строки не участвуют в автоматическом расчёте БЖУ.</div>
             </div>
 
             <div class="col-12">

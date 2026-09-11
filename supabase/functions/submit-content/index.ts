@@ -16,6 +16,11 @@ type CleanSubmission = {
   status: "pending";
 };
 
+type InsertedSubmission = {
+  id: string;
+  created_at?: string;
+};
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SITE_ORIGINS = (Deno.env.get("SITE_ORIGINS") || "https://dafi3134.github.io,http://localhost:8000,http://127.0.0.1:8000")
   .split(",")
@@ -25,6 +30,16 @@ const SUBMISSION_REQUESTS_PER_HOUR = Math.max(
   1,
   Math.min(Number(Deno.env.get("SUBMISSION_REQUESTS_PER_HOUR") || 6), 50)
 );
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
+const SUBMISSION_FROM_EMAIL = Deno.env.get("SUBMISSION_FROM_EMAIL") || "";
+const SUBMISSION_SITE_URL = (Deno.env.get("SUBMISSION_SITE_URL") || "https://dafi3134.github.io/foods").replace(/\/$/, "");
+const SUBMISSION_NOTIFY_EMAILS = [...new Set([
+  Deno.env.get("SUBMISSION_NOTIFY_EMAILS") || "",
+  Deno.env.get("SUBMISSION_NOTIFY_EMAIL") || ""
+]
+  .flatMap(value => value.split(/[;,]/))
+  .map(value => value.trim())
+  .filter(Boolean))];
 
 function corsHeaders(origin: string) {
   const allowedOrigin = SITE_ORIGINS.includes(origin) ? origin : SITE_ORIGINS[0] || "";
@@ -100,6 +115,15 @@ function cleanText(value: unknown, maxLength: number) {
     .slice(0, maxLength);
 }
 
+function escapeHtml(value: unknown) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function cleanMultilineText(value: unknown, maxLength: number) {
   return String(value ?? "")
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
@@ -148,6 +172,32 @@ function firstPrivateValue(fields: Record<string, string | string[]>, keys: Set<
   return null;
 }
 
+function firstFieldValue(fields: Record<string, string | string[]>, names: string[], maxLength = 5000) {
+  const wanted = new Set(names.map(normalizedFieldKey));
+  for (const [key, value] of Object.entries(fields)) {
+    if (!wanted.has(normalizedFieldKey(key))) continue;
+    const text = Array.isArray(value) ? value.join(", ") : value;
+    const cleaned = cleanMultilineText(text, maxLength);
+    if (cleaned) return cleaned;
+  }
+  return "";
+}
+
+function hasRequiredSubmissionFields(type: CleanSubmission["type"], fields: Record<string, string | string[]>) {
+  if (type === "product") {
+    return firstFieldValue(fields, ["Название продукта", "Название", "name"], 180).length >= 2
+      && Boolean(firstFieldValue(fields, ["Ккал на 100 г", "Калорийность", "calories"], 80));
+  }
+  if (type === "recipe") {
+    return firstFieldValue(fields, ["Название рецепта", "Название блюда", "Название", "name"], 180).length >= 2
+      && firstFieldValue(fields, ["Ингредиенты", "ingredients"], 5000).length >= 5
+      && firstFieldValue(fields, ["Приготовление", "instructions"], 5000).length >= 5;
+  }
+  return firstFieldValue(fields, ["Заголовок", "Название", "title"], 180).length >= 2
+    && firstFieldValue(fields, ["Короткая суть", "summary"], 3000).length >= 5
+    && firstFieldValue(fields, ["Полный текст", "content"], 5000).length >= 10;
+}
+
 function publicFieldsOnly(fields: Record<string, string | string[]>) {
   return Object.fromEntries(Object.entries(fields).filter(([key]) => {
     const normalized = normalizedFieldKey(key);
@@ -161,6 +211,23 @@ function normalizeType(value: unknown): CleanSubmission["type"] | null {
     return type as CleanSubmission["type"];
   }
   return null;
+}
+
+function typeLabel(type: CleanSubmission["type"]) {
+  return ({
+    product: "продукт",
+    recipe: "рецепт",
+    article: "статью",
+    myth: "миф"
+  } as const)[type];
+}
+
+function looksLikeEmail(value: string | null) {
+  return Boolean(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+}
+
+function fieldValueText(value: string | string[]) {
+  return Array.isArray(value) ? value.join(", ") : value;
 }
 
 function cleanSourcePage(value: unknown) {
@@ -181,6 +248,7 @@ function sanitizeSubmission(raw: unknown): CleanSubmission | null {
     ? input.payload as Record<string, unknown>
     : {};
   const allFields = cleanFields(rawPayload.fields);
+  if (!hasRequiredSubmissionFields(type, allFields)) return null;
   const authorContact = firstPrivateValue(allFields, CONTACT_FIELD_KEYS, 180);
   const moderatorNote = firstPrivateValue(allFields, MODERATOR_FIELD_KEYS, 2000);
   const fields = publicFieldsOnly(allFields);
@@ -244,16 +312,16 @@ async function consumeQuota(req: Request) {
   return (await response.json()) === true;
 }
 
-async function insertSubmission(submission: CleanSubmission) {
+async function insertSubmission(submission: CleanSubmission): Promise<InsertedSubmission> {
   const key = secretKey();
   if (!SUPABASE_URL || !key) throw new Error("Server database key is not configured");
 
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/submissions`, {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/submissions?select=id,created_at`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "apikey": key,
-      "Prefer": "return=minimal"
+      "Prefer": "return=representation"
     },
     body: JSON.stringify(submission)
   });
@@ -261,6 +329,98 @@ async function insertSubmission(submission: CleanSubmission) {
   if (!response.ok) {
     console.error("Submission insert failed:", await response.text());
     throw new Error("Submission insert failed");
+  }
+
+  const rows = await response.json();
+  const row = Array.isArray(rows) ? rows[0] : rows;
+  if (!row?.id) throw new Error("Submission insert returned no id");
+  return { id: String(row.id), created_at: row.created_at ? String(row.created_at) : undefined };
+}
+
+function notificationConfigured() {
+  return Boolean(RESEND_API_KEY && SUBMISSION_FROM_EMAIL && SUBMISSION_NOTIFY_EMAILS.length);
+}
+
+function buildNotificationText(submission: CleanSubmission, inserted: InsertedSubmission) {
+  const lines = [
+    `Новая заявка: ${typeLabel(submission.type)}`,
+    `ID: ${inserted.id}`,
+    `Заголовок: ${submission.title}`,
+    `Автор: ${submission.author_name || "не указан"}`,
+    `Контакт: ${submission.author_contact || "не указан"}`,
+    `Страница: ${submission.payload.source_page || "не указана"}`,
+    "",
+    "Поля заявки:"
+  ];
+
+  for (const [key, value] of Object.entries(submission.payload.fields)) {
+    lines.push(`${key}: ${fieldValueText(value)}`);
+  }
+  if (submission.moderator_note) {
+    lines.push("", `Комментарий модератору: ${submission.moderator_note}`);
+  }
+  lines.push("", `Открыть панель модерации: ${SUBMISSION_SITE_URL}/owner-panel.html`);
+  return lines.join("\n");
+}
+
+function buildNotificationHtml(submission: CleanSubmission, inserted: InsertedSubmission) {
+  const fields = Object.entries(submission.payload.fields)
+    .map(([key, value]) => `<tr><td style="padding:6px 10px;border:1px solid #ddd"><strong>${escapeHtml(key)}</strong></td><td style="padding:6px 10px;border:1px solid #ddd;white-space:pre-wrap">${escapeHtml(fieldValueText(value))}</td></tr>`)
+    .join("");
+  const moderatorNote = submission.moderator_note
+    ? `<h3>Комментарий модератору</h3><p style="white-space:pre-wrap">${escapeHtml(submission.moderator_note)}</p>`
+    : "";
+  const contact = submission.author_contact || "не указан";
+
+  return `<!doctype html>
+<html lang="ru"><body style="font-family:Arial,sans-serif;color:#222;line-height:1.45">
+  <h2>Новая заявка: ${escapeHtml(typeLabel(submission.type))}</h2>
+  <p><strong>ID:</strong> ${escapeHtml(inserted.id)}<br>
+     <strong>Заголовок:</strong> ${escapeHtml(submission.title)}<br>
+     <strong>Автор:</strong> ${escapeHtml(submission.author_name || "не указан")}<br>
+     <strong>Контакт:</strong> ${escapeHtml(contact)}<br>
+     <strong>Страница:</strong> ${escapeHtml(submission.payload.source_page || "не указана")}</p>
+  <h3>Данные заявки</h3>
+  <table style="border-collapse:collapse;width:100%;max-width:900px">${fields}</table>
+  ${moderatorNote}
+  <p style="margin-top:22px"><a href="${escapeHtml(`${SUBMISSION_SITE_URL}/owner-panel.html`)}">Открыть панель модерации</a></p>
+</body></html>`;
+}
+
+async function sendSubmissionNotification(submission: CleanSubmission, inserted: InsertedSubmission) {
+  if (!notificationConfigured()) {
+    console.warn("Submission email notification is not configured. Set RESEND_API_KEY, SUBMISSION_FROM_EMAIL and SUBMISSION_NOTIFY_EMAIL(S).");
+    return { configured: false, sent: false };
+  }
+
+  const body: Record<string, unknown> = {
+    from: SUBMISSION_FROM_EMAIL,
+    to: SUBMISSION_NOTIFY_EMAILS,
+    subject: `[healthy food] Новая заявка: ${submission.title}`.slice(0, 200),
+    text: buildNotificationText(submission, inserted),
+    html: buildNotificationHtml(submission, inserted)
+  };
+  if (looksLikeEmail(submission.author_contact)) body.reply_to = submission.author_contact;
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": `submission-${inserted.id}`.slice(0, 256)
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      console.error("Submission email failed:", response.status, await response.text());
+      return { configured: true, sent: false };
+    }
+    return { configured: true, sent: true };
+  } catch (error) {
+    console.error("Submission email request failed:", error);
+    return { configured: true, sent: false };
   }
 }
 
@@ -304,8 +464,14 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    await insertSubmission(submission);
-    return jsonResponse({ ok: true }, 201, origin);
+    const inserted = await insertSubmission(submission);
+    const notification = await sendSubmissionNotification(submission, inserted);
+    return jsonResponse({
+      ok: true,
+      submission_id: inserted.id,
+      notification_sent: notification.sent,
+      notification_configured: notification.configured
+    }, 201, origin);
   } catch (error) {
     console.error(error);
     return jsonResponse({ error: "Не удалось сохранить заявку. Попробуй позже." }, 500, origin);

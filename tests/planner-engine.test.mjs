@@ -81,6 +81,40 @@ const profile = {
 assert.equal(Engine.preferenceInfo(dishes[2], profile).blocked, true, "Chicken allergy must block chicken dish");
 assert.equal(Engine.preferenceInfo(dishes[4], profile).liked.length, 1, "Favorite should be recognized");
 
+const potatoDish = {
+  id: "potato-test",
+  name: "Картофельная запеканка",
+  meal_types: ["dinner"],
+  calories: 420,
+  protein: 15,
+  fat: 12,
+  carbs: 60,
+  ingredients: [{ product: "Картофель", grams: 250 }]
+};
+assert.equal(
+  Engine.preferenceInfo(potatoDish, { prefs: { liked: [], disliked: ["картошка"] }, allergies: [] }).blocked,
+  true,
+  "Everyday synonym 'картошка' must block a dish containing 'Картофель'"
+);
+assert.equal(Engine.canonicalIngredientName("Филе грудки куриное"), "курица");
+assert.equal(Engine.canonicalIngredientName("Макароны из твёрдых сортов"), "макароны");
+
+const dairyDish = {
+  id: "dairy-test",
+  name: "Творожная запеканка",
+  meal_types: ["breakfast"],
+  calories: 400,
+  protein: 25,
+  fat: 12,
+  carbs: 45,
+  ingredients: [{ product: "Творог 5%", grams: 180 }, { product: "Сметана 15%", grams: 20 }]
+};
+assert.equal(
+  Engine.preferenceInfo(dairyDish, { prefs: { liked: [], disliked: [] }, allergies: ["молоко"] }).blocked,
+  true,
+  "Milk allergy should conservatively block common dairy products"
+);
+
 const plan = Engine.generatePlan({ dishes, calories: 2000, meals: 4, profile });
 assert.equal(plan.slots.length, 4);
 assert.ok(plan.slots.filter(slot => slot.dish).length >= 3, "Plan should fill available slots");
@@ -102,5 +136,17 @@ if (dinnerIndex >= 0) {
 
 const portion = Engine.portionForTarget({ calories: 400 }, 600);
 assert.equal(portion, 1.5, "Portion scaling should target meal calories within limits");
+
+const smallSnackPortion = Engine.portionForTarget({ calories: 540 }, 220);
+assert.ok(smallSnackPortion <= 0.42, "High-calorie recipes should be scalable down for snack-sized targets");
+
+const diversePlan = Engine.generatePlan({
+  dishes,
+  calories: 2000,
+  meals: 5,
+  profile: { prefs: { liked: [], disliked: [] }, allergies: [] }
+});
+const diverseIds = diversePlan.slots.filter(slot => slot.dish).map(slot => slot.dish.id);
+assert.equal(new Set(diverseIds).size, diverseIds.length, "Planner should avoid duplicate dishes while unused options exist");
 
 console.log("PlannerEngine tests passed.");

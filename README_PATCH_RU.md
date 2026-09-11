@@ -11,7 +11,7 @@ GitHub Pages / docs
         |
         +--> Supabase Auth + approved_submissions
         |
-        +--> Edge Function submit-content --> submissions
+        +--> Edge Function submit-content --> submissions --> Resend --> email владельцу
         |
         +--> Edge Function ai-assistant --> OpenAI Responses API
 ```
@@ -19,6 +19,7 @@ GitHub Pages / docs
 - `docs/` — основной фронтенд и источник истины для GitHub Pages;
 - Supabase — Auth, заявки, права администратора и серверный rate limit;
 - `submit-content` — валидирует и ограничивает публичные заявки;
+- `submit-content` после сохранения заявки отправляет email-уведомление владельцу через Resend, если почтовые secrets настроены;
 - `ai-assistant` — держит OpenAI key на сервере и проверяет AI-ответ;
 - `app.py` — только локальный preview-сервер для `docs/`;
 - обычный планировщик работает без AI и без платного API.
@@ -50,7 +51,16 @@ GitHub Pages / docs
 - размер порции масштабируется под целевые калории;
 - можно заменить конкретное блюдо;
 - автоматически строится список покупок;
+- локальная база расширена до 30 разнообразных блюд, поэтому подбор больше не крутится вокруг четырёх демонстрационных рецептов;
+- добавлены бытовые синонимы продуктов (`картошка` → `картофель`, `паста` → `макароны` и т. п.) и более корректная оценка повторяемости ингредиентов;
 - добавлены автоматические тесты.
+
+### Данные рецептов
+
+- добавлены сырники, шарлотка, макароны по-флотски, творожная запеканка, блины, оладьи, драники, плов, борщ, щи, рассольник, тефтели, голубцы и другие домашние блюда;
+- добавлены недостающие базовые продукты (мука, рис, манка, сахар, масла, томатная паста, сливки, перловка);
+- убраны дубли `Клубника`, `Малина`, `Фасоль стручковая`, лишние пробелы и шумное название геркулеса;
+- `npm run check:data` проходит без предупреждений.
 
 ### AI
 
@@ -223,6 +233,10 @@ SITE_ORIGINS=https://dafi3134.github.io,http://localhost:8000,http://127.0.0.1:8
 RATE_LIMIT_SALT=очень-длинная-случайная-строка
 AI_REQUESTS_PER_HOUR=12
 SUBMISSION_REQUESTS_PER_HOUR=6
+RESEND_API_KEY=...
+SUBMISSION_FROM_EMAIL="Healthy Food <notifications@your-domain.example>"
+SUBMISSION_NOTIFY_EMAIL=your-email@example.com
+SUBMISSION_SITE_URL=https://dafi3134.github.io/foods
 ```
 
 `.env` уже исключён через `.gitignore`.
@@ -235,7 +249,7 @@ SUBMISSION_REQUESTS_PER_HOUR=6
 
 ```bash
 supabase login
-supabase link --project-ref qygayinuchdngerceupt
+supabase link --project-ref qekkfmsiwocrxbwyuwsa
 ```
 
 Передай пользовательские секреты Edge Functions:
@@ -245,6 +259,32 @@ supabase secrets set --env-file .env
 ```
 
 Supabase сам предоставляет функциям серверные переменные проекта (`SUPABASE_URL`, publishable/secret keys), их вручную в `.env` добавлять не требуется.
+
+### Шаг 2.5. Email-уведомления о заявках
+
+Чтобы новые предложения рецептов, продуктов, статей и мифов приходили на почту, создай аккаунт/ключ в Resend и подтверди домен отправителя. Затем заполни в `.env`:
+
+```text
+RESEND_API_KEY=...
+SUBMISSION_FROM_EMAIL="Healthy Food <notifications@your-domain.example>"
+SUBMISSION_NOTIFY_EMAIL=your-email@example.com
+SUBMISSION_SITE_URL=https://dafi3134.github.io/foods
+```
+
+Если получателей несколько, вместо `SUBMISSION_NOTIFY_EMAIL` можно использовать:
+
+```text
+SUBMISSION_NOTIFY_EMAILS=owner@example.com,moderator@example.com
+```
+
+После изменения secrets снова выполни:
+
+```bash
+supabase secrets set --env-file .env
+supabase functions deploy submit-content
+```
+
+Заявка сначала сохраняется в `submissions`, а затем функция пытается отправить письмо. Если почтовый сервис временно недоступен, сохранённая заявка не теряется и пользователь не отправляет её повторно из-за ложной ошибки.
 
 ### Шаг 3. Разверни обе функции
 
@@ -267,13 +307,15 @@ supabase functions deploy ai-assistant
 
 После SQL и deploy проверь по порядку:
 
-1. Открой `submit_product.html` и отправь тестовый продукт.
-2. Открой `owner-panel.html`, войди владельцем.
-3. Убедись, что заявка появилась со статусом `pending`.
-4. Нажми «Одобрить».
-5. Проверь `products.html`/`library.html` и главную страницу.
-6. Открой `ai.html` и задай вопрос, например: «Что выбрать на ужин примерно на 500 ккал?».
-7. Открой `planner.html`, создай рацион и попробуй кнопку замены блюда.
+1. Открой `submit_recipe.html` и отправь тестовый рецепт.
+2. Проверь, что на адрес из `SUBMISSION_NOTIFY_EMAIL` пришло письмо с содержимым заявки.
+3. Отправь по одной тестовой заявке через `submit_product.html`, `submit_article.html` и `submit_myth.html` — все формы используют тот же защищённый серверный обработчик.
+4. Открой `owner-panel.html`, войди владельцем.
+5. Убедись, что заявки появились со статусом `pending`.
+6. Нажми «Одобрить» у тестового рецепта.
+7. Проверь `library.html` и главную страницу.
+8. Открой `ai.html` и задай вопрос, например: «Что выбрать на ужин примерно на 500 ккал?». 
+9. Открой `planner.html`, создай рацион и несколько раз попробуй замену блюда.
 
 ---
 
@@ -307,7 +349,7 @@ Supabase Edge Functions публикуются отдельно командой
 
 ## 9. Данные, которые стоит улучшить вручную
 
-В текущем репозитории рецептов мало. Чтобы планировщик выглядел убедительно, желательно иметь хотя бы 12–20 разнообразных блюд: несколько завтраков, перекусов, обедов и ужинов.
+В локальной базе теперь 30 блюд: завтраки, перекусы, супы, домашние обеды и ужины. Этого уже достаточно, чтобы планировщик не повторял одни и те же 3–4 варианта при обычном профиле.
 
 Запусти:
 
@@ -349,6 +391,10 @@ https://your-domain.example
 ```bash
 supabase secrets set --env-file .env
 ```
+
+### Заявка сохраняется, но письмо не приходит
+
+Проверь Edge Function logs и три переменные: `RESEND_API_KEY`, `SUBMISSION_FROM_EMAIL`, `SUBMISSION_NOTIFY_EMAIL` (или `SUBMISSION_NOTIFY_EMAILS`). Для production у Resend должен быть подтверждён домен отправителя. После изменения secrets обязательно повторно разверни `submit-content`.
 
 ### Админ входит, но получает «нет прав владельца»
 

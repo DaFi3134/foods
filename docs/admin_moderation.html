@@ -18,8 +18,8 @@
     <section class="submit-hero submit-hub-hero soft-shadow mb-4">
       <div class="submit-hero-content">
         <span class="submit-eyebrow"><i class="bi bi-shield-check"></i> Для владельца сайта</span>
-        <h1>Настройка Supabase, модерации и AI</h1>
-        <p>Публичный сайт читает только одобренные материалы. Новые заявки проходят через Edge Function, а права владельца проверяются сервером по UUID пользователя Supabase Auth.</p>
+        <h1>Настройка Supabase, модерации, почты и AI</h1>
+        <p>Публичный сайт читает только одобренные материалы. Новые заявки проходят через Edge Function, владельцу может приходить email через Resend, а права администратора проверяются сервером по UUID пользователя Supabase Auth.</p>
       </div>
       <div class="submit-hero-badge">
         <i class="bi bi-lock"></i>
@@ -62,8 +62,18 @@
         <article class="instruction-step soft-shadow h-100">
           <div class="instruction-number">4</div>
           <div>
+            <h3>Настрой secrets и почту</h3>
+            <p>Создай <code>.env</code> по <code>.env.example</code>. Для писем нужны <code>RESEND_API_KEY</code>, <code>SUBMISSION_FROM_EMAIL</code> и <code>SUBMISSION_NOTIFY_EMAIL</code>. Затем выполни <code>supabase secrets set --env-file .env</code>.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-6">
+        <article class="instruction-step soft-shadow h-100">
+          <div class="instruction-number">5</div>
+          <div>
             <h3>Разверни две Edge Functions</h3>
-            <p>Выполни <code>supabase functions deploy</code>. Функция <code>submit-content</code> принимает и ограничивает заявки, а <code>ai-assistant</code> безопасно обращается к OpenAI.</p>
+            <p>Выполни <code>supabase functions deploy</code>. <code>submit-content</code> валидирует и ограничивает заявки, сохраняет их и отправляет email; <code>ai-assistant</code> безопасно обращается к OpenAI.</p>
           </div>
         </article>
       </div>
